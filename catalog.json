@@ -1,0 +1,875 @@
+{
+ "as_of": "2026-10-01",
+ "source_notes": "Hyperlocal newsletters from Gothamist, 'Hyperlocal New York City publications are having a moment' (Sep 17, 2026), plus established neighborhood and citywide outlets. Every feed was fetched and parsed on 2026-10-01.",
+ "publications": [
+  {
+   "id": "bedstuystoop",
+   "name": "Bed-Stuy Stoop",
+   "short": "BEDSTUY",
+   "color": "#8e2f2b",
+   "ink": "#f4f1ea",
+   "home": "https://bedstuystoop.substack.com",
+   "feed": "https://bedstuystoop.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Bed-Stuy"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Bed-Stuy"
+   ],
+   "kind": "newsletter",
+   "note": "Amber Jamieson; weekly"
+  },
+  {
+   "id": "parkslopepulse",
+   "name": "Park Slope Pulse",
+   "short": "SLOPE",
+   "color": "#a8862a",
+   "ink": "#f4f1ea",
+   "home": "https://www.parkslopepulse.com",
+   "feed": "https://parkslopeliving.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Park Slope"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Park Slope"
+   ],
+   "kind": "newsletter",
+   "note": "Weekly; openings, events, local government"
+  },
+  {
+   "id": "cobblehill",
+   "name": "Cobble Hill Collective",
+   "short": "COBBLE",
+   "color": "#3d6b4f",
+   "ink": "#f4f1ea",
+   "home": "https://cobblehillcollective.substack.com",
+   "feed": "https://cobblehillcollective.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Cobble Hill"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Cobble Hill"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "clintongreene",
+   "name": "Clinton & Greene",
+   "short": "CLINTON",
+   "color": "#34507a",
+   "ink": "#f4f1ea",
+   "home": "https://clintonandgreene.substack.com",
+   "feed": "https://clintonandgreene.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Clinton Hill",
+    "Fort Greene"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Clinton Hill",
+    "Fort Greene"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "carrollgardens",
+   "name": "The Carroll Gardens Times",
+   "short": "CARROLL",
+   "color": "#6a6762",
+   "ink": "#f4f1ea",
+   "home": "https://thecarrollgardenstimes.substack.com",
+   "feed": "https://thecarrollgardenstimes.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Carroll Gardens"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Carroll Gardens"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "boerum",
+   "name": "Boerum Bulletin",
+   "short": "BOERUM",
+   "color": "#b5542c",
+   "ink": "#f4f1ea",
+   "home": "https://boerumbulletin.substack.com",
+   "feed": "https://boerumbulletin.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Boerum Hill"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Boerum Hill"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "courtstreet",
+   "name": "Court Street Journal",
+   "short": "COURT ST",
+   "color": "#6a4a78",
+   "ink": "#f4f1ea",
+   "home": "https://courtstreetjournal.substack.com",
+   "feed": "https://courtstreetjournal.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Downtown Brooklyn",
+    "Cobble Hill"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Downtown Brooklyn",
+    "Cobble Hill"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "pineapple",
+   "name": "Pineapple Street",
+   "short": "PINEAPPLE",
+   "color": "#2f6468",
+   "ink": "#f4f1ea",
+   "home": "https://www.pineapplestreetbk.com",
+   "feed": "https://pineapplestreetbk.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Brooklyn Heights"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Brooklyn Heights"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "dekalb",
+   "name": "DeKalb Dispatch",
+   "short": "DEKALB",
+   "color": "#86623a",
+   "ink": "#f4f1ea",
+   "home": "https://dekalbdispatch.substack.com",
+   "feed": "https://dekalbdispatch.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Fort Greene",
+    "Clinton Hill"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Fort Greene",
+    "Clinton Hill"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "grandarmy",
+   "name": "Grand Army Gazette",
+   "short": "GRAND ARMY",
+   "color": "#4f7a2f",
+   "ink": "#f4f1ea",
+   "home": "https://grandarmygazette.substack.com",
+   "feed": "https://grandarmygazette.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Prospect Heights",
+    "Park Slope",
+    "Crown Heights"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Prospect Heights",
+    "Park Slope",
+    "Crown Heights"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "eastny",
+   "name": "East New York Times",
+   "short": "EAST NY",
+   "color": "#7a3f5a",
+   "ink": "#f4f1ea",
+   "home": "https://eastnewyorktimes.substack.com",
+   "feed": "https://eastnewyorktimes.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "East New York"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "East New York"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "grimesquare",
+   "name": "Grime Square",
+   "short": "GRIME SQ",
+   "color": "#3f6f7a",
+   "ink": "#f4f1ea",
+   "home": "https://grime-square.com",
+   "feed": "https://grimesq.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Bushwick",
+    "Ridgewood",
+    "Culture"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Bushwick",
+    "Ridgewood"
+   ],
+   "kind": "newsletter",
+   "note": "Essays and on-the-scene culture; North Brooklyn and Ridgewood"
+  },
+  {
+   "id": "rockawaydrop",
+   "name": "The Rockaway Drop",
+   "short": "ROCKAWAY",
+   "color": "#5c5a8a",
+   "ink": "#f4f1ea",
+   "home": "https://rockawaydrop.substack.com",
+   "feed": "https://rockawaydrop.substack.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Queens",
+    "Rockaway"
+   ],
+   "borough": "Queens",
+   "neighborhoods": [
+    "Rockaway"
+   ],
+   "kind": "newsletter",
+   "note": ""
+  },
+  {
+   "id": "greenpointers",
+   "name": "Greenpointers",
+   "short": "GREENPT",
+   "color": "#6e5a3a",
+   "ink": "#f4f1ea",
+   "home": "https://greenpointers.com",
+   "feed": "https://greenpointers.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Greenpoint",
+    "Williamsburg"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Greenpoint",
+    "Williamsburg"
+   ],
+   "kind": "site",
+   "note": "Long-running neighborhood blog"
+  },
+  {
+   "id": "brooklynpaper",
+   "name": "Brooklyn Paper",
+   "short": "BK PAPER",
+   "color": "#a83a3a",
+   "ink": "#f4f1ea",
+   "home": "https://www.brooklynpaper.com",
+   "feed": "https://brooklynpaper.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "News"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Schneps; boroughwide"
+  },
+  {
+   "id": "bklyner",
+   "name": "Bklyner",
+   "short": "BKLYNER",
+   "color": "#3a8a7a",
+   "ink": "#f4f1ea",
+   "home": "https://bklyner.com",
+   "feed": "https://bklyner.com/rss/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "News"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Boroughwide"
+  },
+  {
+   "id": "bkreader",
+   "name": "BKReader",
+   "short": "BKREADER",
+   "color": "#8a5a7a",
+   "ink": "#f4f1ea",
+   "home": "https://www.bkreader.com",
+   "feed": "https://bkreader.com/rss/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Bed-Stuy",
+    "Crown Heights",
+    "Flatbush",
+    "News"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [
+    "Bed-Stuy",
+    "Crown Heights",
+    "Flatbush"
+   ],
+   "kind": "site",
+   "note": "Central Brooklyn"
+  },
+  {
+   "id": "brownstoner",
+   "name": "Brownstoner",
+   "short": "BROWNSTONER",
+   "color": "#5a7a3a",
+   "ink": "#f4f1ea",
+   "home": "https://www.brownstoner.com",
+   "feed": "https://brownstoner.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Brooklyn",
+    "Housing"
+   ],
+   "borough": "Brooklyn",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Real estate, architecture, history"
+  },
+  {
+   "id": "westsiderag",
+   "name": "West Side Rag",
+   "short": "WEST SIDE",
+   "color": "#7a6a2a",
+   "ink": "#f4f1ea",
+   "home": "https://www.westsiderag.com",
+   "feed": "https://www.westsiderag.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Upper West Side"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Upper West Side"
+   ],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "w42st",
+   "name": "W42ST",
+   "short": "W42ST",
+   "color": "#2a5a7a",
+   "ink": "#f4f1ea",
+   "home": "https://w42st.com",
+   "feed": "https://w42st.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Hell's Kitchen",
+    "Midtown West"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Hell's Kitchen",
+    "Midtown West"
+   ],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "tribecacitizen",
+   "name": "Tribeca Citizen",
+   "short": "TRIBECA",
+   "color": "#8e2f2b",
+   "ink": "#f4f1ea",
+   "home": "https://tribecacitizen.com",
+   "feed": "https://tribecacitizen.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Tribeca"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Tribeca"
+   ],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "lodown",
+   "name": "The Lo-Down",
+   "short": "LO-DOWN",
+   "color": "#a8862a",
+   "ink": "#f4f1ea",
+   "home": "https://www.thelodownny.com",
+   "feed": "https://www.thelodownny.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Lower East Side"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Lower East Side"
+   ],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "evgrieve",
+   "name": "EV Grieve",
+   "short": "EV GRIEVE",
+   "color": "#3d6b4f",
+   "ink": "#f4f1ea",
+   "home": "https://evgrieve.com",
+   "feed": "https://evgrieve.com/feeds/posts/default",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "East Village"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "East Village"
+   ],
+   "kind": "site",
+   "note": "Daily since 2007"
+  },
+  {
+   "id": "harlemworld",
+   "name": "Harlem World Magazine",
+   "short": "HARLEM",
+   "color": "#34507a",
+   "ink": "#f4f1ea",
+   "home": "https://www.harlemworldmagazine.com",
+   "feed": "https://www.harlemworldmagazine.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Harlem"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Harlem"
+   ],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "uptowncollective",
+   "name": "Uptown Collective",
+   "short": "UPTOWN",
+   "color": "#6a6762",
+   "ink": "#f4f1ea",
+   "home": "https://uptowncollective.com",
+   "feed": "https://uptowncollective.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Manhattan",
+    "Washington Heights",
+    "Inwood",
+    "Harlem",
+    "Culture"
+   ],
+   "borough": "Manhattan",
+   "neighborhoods": [
+    "Washington Heights",
+    "Inwood",
+    "Harlem"
+   ],
+   "kind": "site",
+   "note": "Washington Heights, Inwood and Harlem"
+  },
+  {
+   "id": "norwoodnews",
+   "name": "Norwood News",
+   "short": "NORWOOD",
+   "color": "#b5542c",
+   "ink": "#f4f1ea",
+   "home": "https://www.norwoodnews.org",
+   "feed": "https://www.norwoodnews.org/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Bronx",
+    "Norwood",
+    "Bedford Park",
+    "Fordham"
+   ],
+   "borough": "Bronx",
+   "neighborhoods": [
+    "Norwood",
+    "Bedford Park",
+    "Fordham"
+   ],
+   "kind": "site",
+   "note": "Nonprofit; northwest Bronx"
+  },
+  {
+   "id": "motthaven",
+   "name": "Mott Haven Herald",
+   "short": "MOTT HAVEN",
+   "color": "#6a4a78",
+   "ink": "#f4f1ea",
+   "home": "https://www.motthavenherald.com",
+   "feed": "https://www.motthavenherald.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Bronx",
+    "Mott Haven",
+    "Hunts Point"
+   ],
+   "borough": "Bronx",
+   "neighborhoods": [
+    "Mott Haven",
+    "Hunts Point"
+   ],
+   "kind": "site",
+   "note": "Also publishes the Hunts Point Express"
+  },
+  {
+   "id": "qns",
+   "name": "QNS",
+   "short": "QNS",
+   "color": "#86623a",
+   "ink": "#f4f1ea",
+   "home": "https://qns.com",
+   "feed": "https://qns.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Queens",
+    "News"
+   ],
+   "borough": "Queens",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Schneps; boroughwide, includes the Queens Post family"
+  },
+  {
+   "id": "silive",
+   "name": "Staten Island Advance",
+   "short": "SI ADVANCE",
+   "color": "#4f7a2f",
+   "ink": "#f4f1ea",
+   "home": "https://www.silive.com",
+   "feed": "https://www.silive.com/arc/outboundfeeds/rss/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Staten Island",
+    "News"
+   ],
+   "borough": "Staten Island",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "brooklynvegan",
+   "name": "BrooklynVegan",
+   "short": "BKVEGAN",
+   "color": "#7a3f5a",
+   "ink": "#f4f1ea",
+   "home": "https://www.brooklynvegan.com",
+   "feed": "https://brooklynvegan.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Culture",
+    "Music"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Concerts and music"
+  },
+  {
+   "id": "hyperallergic",
+   "name": "Hyperallergic",
+   "short": "HYPERALLERGIC",
+   "color": "#3f6f7a",
+   "ink": "#f4f1ea",
+   "home": "https://hyperallergic.com",
+   "feed": "https://hyperallergic.com/rss/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Culture",
+    "Art"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Art world, Brooklyn-based"
+  },
+  {
+   "id": "amny",
+   "name": "amNewYork",
+   "short": "AMNY",
+   "color": "#5c5a8a",
+   "ink": "#f4f1ea",
+   "home": "https://www.amny.com",
+   "feed": "https://amny.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "News"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Schneps"
+  },
+  {
+   "id": "gothamist",
+   "name": "Gothamist",
+   "short": "GOTH",
+   "color": "#6e5a3a",
+   "ink": "#f4f1ea",
+   "home": "https://gothamist.com",
+   "feed": "https://gothamist.com/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "News"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "WNYC"
+  },
+  {
+   "id": "thecity",
+   "name": "The City",
+   "short": "CITY",
+   "color": "#a83a3a",
+   "ink": "#f4f1ea",
+   "home": "https://www.thecity.nyc",
+   "feed": "https://www.thecity.nyc/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "News",
+    "Politics"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Nonprofit"
+  },
+  {
+   "id": "hellgate",
+   "name": "Hell Gate",
+   "short": "HELL GATE",
+   "color": "#3a8a7a",
+   "ink": "#f4f1ea",
+   "home": "https://hellgatenyc.com",
+   "feed": "https://hellgatenyc.com/all-posts/rss/",
+   "tags": [
+    "NYC",
+    "Local",
+    "News",
+    "Politics"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Worker-owned"
+  },
+  {
+   "id": "groove",
+   "name": "The New York Groove",
+   "short": "GROOVE",
+   "color": "#8a5a7a",
+   "ink": "#f4f1ea",
+   "home": "https://nygroove.nyc",
+   "feed": "https://nygroove.nyc/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Culture"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "streetsblog",
+   "name": "Streetsblog NYC",
+   "short": "STREETS",
+   "color": "#5a7a3a",
+   "ink": "#f4f1ea",
+   "home": "https://nyc.streetsblog.org",
+   "feed": "https://nyc.streetsblog.org/feed",
+   "tags": [
+    "NYC",
+    "Local",
+    "Transit"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "documented",
+   "name": "Documented NY",
+   "short": "DOC",
+   "color": "#7a6a2a",
+   "ink": "#f4f1ea",
+   "home": "https://documentedny.com",
+   "feed": "https://documentedny.com/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Immigration"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Nonprofit"
+  },
+  {
+   "id": "citylimits",
+   "name": "City Limits",
+   "short": "LIMITS",
+   "color": "#2a5a7a",
+   "ink": "#f4f1ea",
+   "home": "https://citylimits.org",
+   "feed": "https://citylimits.org/feed/",
+   "tags": [
+    "NYC",
+    "Local",
+    "Housing"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "Nonprofit; blocks automated fetches at times"
+  },
+  {
+   "id": "cityandstate",
+   "name": "City & State NY",
+   "short": "C&S",
+   "color": "#8e2f2b",
+   "ink": "#f4f1ea",
+   "home": "https://www.cityandstateny.com",
+   "feed": "https://www.cityandstateny.com/rss/all",
+   "tags": [
+    "NYC",
+    "Local",
+    "Politics"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": ""
+  },
+  {
+   "id": "nyt",
+   "name": "NYT",
+   "short": "NYT",
+   "color": "#a8862a",
+   "ink": "#f4f1ea",
+   "home": "https://www.nytimes.com/section/nyregion",
+   "feed": "https://rss.nytimes.com/services/xml/rss/nyt/NYRegion.xml",
+   "tags": [
+    "NYC",
+    "Local",
+    "News"
+   ],
+   "borough": "Citywide",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "New York Region feed"
+  },
+  {
+   "id": "npr",
+   "name": "NPR",
+   "short": "NPR",
+   "color": "#4a6a5a",
+   "ink": "#f4f1ea",
+   "home": "https://www.npr.org",
+   "feed": "https://feeds.npr.org/1001/rss.xml",
+   "tags": [
+    "National",
+    "News"
+   ],
+   "borough": "National",
+   "neighborhoods": [],
+   "kind": "site",
+   "note": "National public radio; News topic feed"
+  }
+ ]
+}

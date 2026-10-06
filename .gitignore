@@ -1,0 +1,13 @@
+# generated or secret; everything else is source
+data.json
+data.json.tmp
+fetch.log
+server.log
+node_modules/
+.wrangler/
+.dev.vars
+public/*
+!public/_headers
+__pycache__/
+.DS_Store
+backups/

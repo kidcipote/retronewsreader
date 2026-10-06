@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>retronewsreader</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#171614">
+<script src="paper.js"></script>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-title" content="newsreader">
+<link rel="preload" href="/fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">   <!-- the two typefaces, served from this site (fonts/) -->
+<style>
+  :root {
+    /* newsprint and ink: warm grays for the chrome, one editorial red for state */
+    --face: #d8d4cc; --light: #f6f3ed; --lighter: #e8e4dc; --shade: #8f8b83; --dark: #262420;
+    --black: #171614; --white: #f6f3ed; --ink86: rgba(23,22,20,.88); --accent: #a8322a; --accent-soft: #efdcd8;
+    --navy: var(--black); --navy2: var(--black); --desk: #34332f; --sel: var(--black); --green: #3d6b4f;
+    --font: "Inter Tight", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", "Lucida Console", monospace;
+    /* paper: the reading surfaces only; window chrome stays gray */
+    --paper: #f7f5f0; --paper-ink: var(--ink86); --paper-soft: #6b6761; --paper-rule: #e2ded6; --paper-link: #34507a; --paper-box: rgba(0,0,0,.045); --img-dim: 1;
+    /* the colours that used to be written straight into rules: fields, text on a selected row, button text, the greys of small print */
+    --field: #fff; --on-sel: #fff; --on-sel-soft: rgba(254,254,254,.7); --on-sel-accent: #e9a79f; --btn-ink: #000; --dim: #333; --dim1: #444; --dim2: #555; --faint: #bbb; --star: #b9b4ac;
+    /* saved: a muted ochre, the one named colour beside the red. A saved row carries the star in it and has no wash (it was washed until 2026-10-05; on Sepia it read as the paper), so a saved story is told by the star alone. */
+    --saved: #a8862a;
+    --read: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  }
+  html[data-paper="sepia"] { --paper: #efe4cf; --paper-ink: #3a2e1c; --paper-soft: #76674f; --paper-rule: #dacdb3; --paper-link: #6b3a1a; --paper-box: rgba(60,40,10,.07); --img-dim: .94; --saved: #96741f; }
+  /* Night: the third paper, and the one that changes the whole reader, not only the reading surfaces. Black and phosphor green, like an old
+     terminal. It is one block because nearly every colour is a variable above. State, the red by day, is a pale yellow-green.
+     Nothing here may add another hue. */
+  html[data-paper="night"] { color-scheme: dark;
+    --face: #0e140f; --light: #2a5f3b; --lighter: #193a25; --shade: #24623a; --dark: #030504;
+    --black: #62c482; --white: #0a120c; --ink86: #62c482; --accent: #c2e372; --accent-soft: #1b4526; --desk: #050806; --sel: #1d4f2c; --green: #62c482;
+    --paper: #0a100b; --paper-ink: #5cba7b; --paper-soft: #3d9159; --paper-rule: #163622; --paper-link: #a3e6b8; --paper-box: rgba(98,196,130,.07); --img-dim: .8;
+    --field: #0a100b; --on-sel: #c4f2d2; --on-sel-soft: rgba(196,242,210,.7); --on-sel-accent: #c2e372; --btn-ink: #62c482; --dim: #489d63; --dim1: #489d63; --dim2: #3d9159; --faint: #24623a; --star: #24623a; --saved: var(--accent);
+    --font: "JetBrains Mono", "Lucida Console", monospace; }
+  /* Easy on the eyes: no solid bright-green slabs. The title bar, a selected row and a chosen chip are dark green with light text, the green
+     itself is a little greyed, and nothing sits on pure black. */
+  html[data-paper="night"] .titlebar, html[data-paper="night"] .wel .chip.on, html[data-paper="night"] #cal .calgrid button.on { background: var(--sel); color: var(--on-sel); }
+  html[data-paper="night"] body, html[data-paper="night"] input, html[data-paper="night"] textarea { color: var(--black); }
+  html[data-paper="night"] button:disabled { text-shadow: none; }
+  html[data-paper="night"] .article .doc { font-family: var(--read); letter-spacing: .02em; }   /* a story's body keeps the reading face */
+  /* every outlet's colour becomes the one green: stripes, bars and swatches. Outlets are told apart by name at night. */
+  html[data-paper="night"] [style*="--pc"] { --pc: var(--shade) !important; } html[data-paper="night"] .sw:not(.sw-c) { background: var(--black) !important; box-shadow: none; }
+  /* pictures: every photo in a story, and the thumbnails on shared-story cards, in green monochrome. The Site view frame is the outlet's own page and is left alone. */
+  html[data-paper="night"] .article .doc img, html[data-paper="night"] .article .doc video, html[data-paper="night"] .convo .log .card img { filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(1.6) brightness(.6) !important; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--desk); font: 11.5px/1.35 var(--font); color: var(--black); letter-spacing: .01em; overflow: hidden; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; padding: 14px; }
+
+  .raised { background: var(--face); box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--lighter), inset -2px -2px var(--shade), inset 2px 2px var(--light); }
+  .sunken { background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  button { font: 500 11.5px var(--font); letter-spacing: .01em; color: var(--btn-ink); background: var(--face); border: 0; padding: 3px 10px; cursor: default;
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light), inset -2px -2px var(--shade), inset 2px 2px var(--lighter); white-space: nowrap; }
+  button:active, button[aria-expanded="true"] { box-shadow: inset 1px 1px var(--dark), inset -1px -1px var(--light), inset 2px 2px var(--shade), inset -2px -2px var(--lighter); }
+  button:disabled { color: var(--shade); text-shadow: 1px 1px var(--light); }
+  input[type=date] { font: 300 11px var(--mono); border: 0; padding: 2px 3px; background: var(--field); width: 118px;
+    box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  /* Tick boxes and radio buttons are drawn, not the browser's or the phone's: a white sunken box with an ink mark, as in Windows 2000 */
+  input[type=checkbox], input[type=radio] { -webkit-appearance: none; appearance: none; flex: none; width: 13px; height: 13px; margin: 0 5px 0 0; padding: 0; vertical-align: -2px; background: var(--field); border: 0; border-radius: 0;
+    display: inline-grid; place-content: center; box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  .menu .row label, .wel .frow { display: inline-flex; align-items: center; }   /* a ticked box must not sit lower than an empty one */
+  input[type=radio] { border-radius: 50%; box-shadow: inset 0 0 0 1px var(--shade), inset 0 0 0 2px var(--dark); }
+  input[type=checkbox]:checked::after { content: ""; width: 7px; height: 3px; border-left: 2px solid var(--black); border-bottom: 2px solid var(--black); transform: translateY(-1px) rotate(-45deg); }
+  input[type=checkbox]:indeterminate::after { content: ""; width: 7px; height: 2px; background: var(--black); }
+  input[type=radio]:checked::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--black); }
+  input[type=checkbox]:disabled, input[type=radio]:disabled { background: var(--face); }
+  input[type=checkbox]:disabled::after { border-color: var(--shade); }
+  /* The reader's own date picker (drawCal in app.js): the phone's calendar wheel is never opened. A date is a sunken field that opens a
+     month drawn in the menu; the chosen day is inked, today is ringed in the one red. */
+  .datebtn { flex: 1; min-width: 130px; text-align: left; font: 400 11.5px var(--font); padding: 3px 6px; background: var(--field); display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  .datebtn::after { content: "▾"; } .datebtn.on::after { content: "▴"; }
+  #cal { margin: 5px 0 2px; padding: 6px; background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  #cal .calhead { display: flex; align-items: center; justify-content: space-between; font-weight: 600; margin-bottom: 5px; } #cal .calhead button { padding: 1px 9px; }
+  #cal .calgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; }
+  #cal .calgrid i { font: 300 9px var(--mono); font-style: normal; color: var(--dim2); padding-bottom: 2px; }
+  #cal .calgrid button { padding: 3px 0; background: transparent; box-shadow: none; font: 400 11px var(--font); }
+  #cal .calgrid button:hover:not(:disabled) { background: var(--face); }
+  #cal .calgrid button.today { box-shadow: inset 0 0 0 1px var(--accent); }
+  #cal .calgrid button.on { background: var(--black); color: var(--white); }
+  #cal .calgrid button:disabled { color: var(--faint); text-shadow: none; }
+  /* the reader's own question box (retroAsk in app.js) */
+  .ask { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; background: rgba(0,0,0,.3); }
+  .ask .box { width: min(380px, calc(92 * var(--vw, 1vw))); padding: 3px; } .ask .titlebar .at { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ask .abody { padding: 12px 12px 4px; } .ask p { margin: 0 0 10px; white-space: pre-line; font-size: 12.5px; line-height: 1.4; }
+  .ask input { width: 100%; font: 13px var(--font); border: 0; padding: 5px 7px; background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  .ask .abtns { display: flex; justify-content: flex-end; gap: 6px; padding: 8px 12px 12px; } .ask .abtns button { min-width: 80px; padding: 4px 12px; }
+
+  .window { width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 3px; }
+  .titlebar { display: flex; align-items: center; gap: 8px; padding: 3px 4px 3px 8px; height: 24px; background: var(--black); color: var(--white); font-weight: 500; font-size: 12px; letter-spacing: .02em; user-select: none; }
+  .titlebar .ico { width: 12px; height: 12px; background: var(--accent); box-shadow: inset 0 0 0 1px var(--white); }
+  .titlebar .sp { flex: 1; }
+  .titlebar #wtitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .titlebar .wb { width: 16px; height: 14px; padding: 0; font: 500 10px/12px var(--font); }
+  .menubar { display: flex; gap: 2px; padding: 2px 2px 3px; position: relative; border-bottom: 1px solid var(--shade); }   /* with the light line under it, the classic etched divider */
+  .menubar > span { padding: 1px 6px; position: relative; }
+  .menubar > span:hover, .menubar > span.open { background: var(--sel); color: var(--on-sel); }
+  .menubar .menu { color: var(--black); }   /* the open menu must not inherit the white of its highlighted title */
+  .menubar u { text-decoration: underline; }
+  /* where the keyboard is: a red ring on whatever has focus, shown only when the keyboard put it there */
+  button:focus-visible, [tabindex]:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; } #list:focus-visible { outline-offset: -2px; }
+  .menubar .gap { flex: 1; } .menubar button { padding: 0 8px; height: 18px; } .menubar #menu-help button { width: 20px; padding: 0; font-weight: 600; }
+  .menubar > .ic { padding: 0; } .menubar > .ic:hover, .menubar > .ic.open { background: none; color: inherit; } .menubar > .ic .menu { left: auto; right: 0; }
+
+  /* toolbar with dropdowns */
+  /* one row, always: when the window is narrow the buttons give up width and cut their labels with an ellipsis; they never drop to a second line */
+  .toolbar { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-top: 1px solid var(--light); border-bottom: 1px solid var(--shade); flex-wrap: nowrap; }   /* no overflow: hidden here: it would clip the open Filter and Dates menus */
+  .toolbar > button, .toolbar > .dd { flex: 0 1 auto; min-width: 0; } .toolbar > button, .toolbar > .dd > button { overflow: hidden; text-overflow: ellipsis; max-width: 100%; } .toolbar > .sep { flex: none; }
+  /* (previous and next used to be hidden under 900px to save room; the four slots now give up their words first, so nothing has to go) */
+  .toolbar .sep { width: 2px; height: 20px; box-shadow: inset 1px 0 var(--shade), inset -1px 0 var(--light); margin: 0 2px; }
+  .toolbar label { display: inline-flex; align-items: center; gap: 4px; }
+  .toolbar .k, .k { font: 300 10px var(--mono); letter-spacing: .05em; color: var(--black); }
+  .dd { position: relative; }
+  .toolbar .sm { display: none; }
+  /* The four slots (Filter, Saved, Read or unread, Gossip Column) are pictographs: small pixel marks drawn for this reader, in ink, the same
+     on every paper. On a wide screen the word sits beside the mark and is the first thing in the row to give way; a count stays. */
+  .slot { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+  .toolbar > .slot, .toolbar > #dd-filter { flex: 0 20 auto; min-width: 30px; } .toolbar #dd-filter > .slot { width: 100%; }
+  .pm { flex: none; width: 14px; height: 14px; fill: currentColor; shape-rendering: crispEdges; }
+  .slot .w { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .slot .n { flex: none; font: 300 10px var(--mono); } .slot .n:empty { display: none; } .slot .w + .n::before { content: "· "; }
+  #t-mark .env-open, #t-mark.toread .env-shut { display: none; } #t-mark.toread .env-open { display: block; }
+  /* the operator's Saved view: holding the envelope turns it into Sync (an arrow into a tray) and holding longer sends the selection; it looks like everyone's otherwise */
+  #t-mark { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  #t-mark .sync-ic { display: none; } #t-mark.syncmode .sync-ic { display: block; } #t-mark.syncmode .env-shut, #t-mark.syncmode .env-open { display: none; }
+  .menu { position: absolute; top: 100%; left: 0; z-index: 40; min-width: 220px; padding: 6px 8px; margin-top: 2px; display: none; font-size: 11.5px; }
+  .menu.on { display: block; max-height: calc(100 * var(--vh, 1vh) - 110px); overflow-y: auto; } .menu.fromright { left: auto; right: 0; }   /* opened from a button in the right half: it grows leftward (app.js sets the class) */
+  .menu .row { display: flex; align-items: center; gap: 5px; padding: 2px 0; white-space: nowrap; }
+  .menu .row .sw { width: 9px; height: 9px; box-shadow: inset 0 0 0 1px #000; }
+  .menu .row .c { margin-left: auto; font: 300 10px var(--mono); color: var(--dim); padding-left: 12px; }
+  .menu .row.off { color: var(--shade); }
+  .menu .row.k { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  .menu .sw-c { width: 14px; height: 10px; box-shadow: inset 0 0 0 1px var(--dark); }
+  .menu .row[data-days]:hover, .menu .row#m-manage:hover, .menu .row#m-fetch:hover, .menu .row#m-reading:hover, .menu .row#m-volume:hover, .menu .row#m-reports:hover, .menu .row#m-door:hover, .menu .row#m-relink:hover, .menu .row#m-inviters:hover, .menu .row#m-links:hover, .menu .row#c-account:hover, .menu .row#c-signoff:hover { background: var(--sel); color: var(--on-sel); margin: 0 -8px; padding-left: 8px; padding-right: 8px; } .menu .row.off .c { color: var(--accent); }
+  .menu .tw { flex: none; width: 10px; text-align: center; font-size: 9px; }
+  .menu .row.zero, .menu .row.zero .c { color: var(--shade); }
+  .menu .only { margin-left: 8px; padding: 0 6px; font: 300 10px var(--mono); } .menu .row .c + .only { flex: none; }
+  .article .doc .label .outlet { cursor: pointer; border-bottom: 1px dotted currentColor; }
+  .menu .btns.ftop { margin: 0 0 2px; } .menu .btns.ftop button { padding: 3px 6px; min-width: 0; } #f-clear .n:not(:empty)::before { content: "· "; }
+  #filter-menu { max-height: calc(70 * var(--vh, 1vh)); overflow: auto; min-width: 250px; } .menu .sec { cursor: default; font-weight: 600; } .menu .sec .c { font-weight: 300; }
+  .menu .row.act:hover { background: var(--sel); color: var(--on-sel); margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
+  /* the tag view: a list you visit from a story's tag. The filter controls are out of play while it is open. */
+  .tagbar { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-bottom: 1px solid var(--shade); white-space: nowrap; }
+  .tagbar #tag-name { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .window.tagview .strip { display: none; } .window.tagview .toolbar .dd, .window.tagview .toolbar > #t-saved, .window.tagview .toolbar > #t-refresh { visibility: hidden; }
+  .strip .sm { display: none; } .strip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .strip { padding: 5px 10px; font-size: 11.5px; background: var(--lighter); border-bottom: 1px solid var(--shade); } .strip a { color: var(--paper-link); text-decoration: underline; cursor: pointer; white-space: nowrap; }
+  /* Every menu speaks in one voice: the same typeface and size for what you read and tap, the monospace only for small labels and counts,
+     the same row height and the same rules between sections. Help and Dates follow it like Filter and View do. */
+  #help-menu .hrow { display: grid; grid-template-columns: 96px 1fr; gap: 8px; align-items: center; padding: 2px 0; font: 400 11.5px/1.35 var(--font); } #help-menu .hrow b { font-weight: 600; }
+  #help-menu a { color: var(--paper-link); }
+  /* Help shows the mark itself where a thing has one, with its word kept for a screen reader (.vh: there, but not drawn) */
+  .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  #help-menu .hrow b { display: inline-flex; align-items: center; } .menu .row label .pm { margin-right: 6px; }
+  .tintsw { display: inline-block; width: 22px; height: 12px; background: color-mix(in srgb, var(--accent) 13%, var(--paper)); box-shadow: inset 2px 0 var(--accent), inset 0 0 0 1px var(--paper-rule); }
+  .hrow.ph { display: none !important; }   /* phone-only help rows; the phone block shows them and hides the wide-screen ones */
+  .menu hr { border: 0; height: 2px; box-shadow: inset 0 1px var(--shade), inset 0 -1px var(--light); margin: 5px 0; }
+  .menu .btns { display: flex; gap: 4px; margin-top: 4px; } .menu .btns button { flex: 1; padding: 2px 6px; }
+  .mini-bar { display: inline-block; width: 70px; height: 10px; background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade); padding: 1px; vertical-align: -2px; }
+  .mini-bar i { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--black) 0 4px, transparent 4px 6px); }
+
+  /* Nothing stretches past its edge. A phone pulls a scrolling pane beyond its top and shows a blank gap (its "rubber band"); a desktop
+     window does not, and neither does this one. It also stops a pull on a pane from dragging the whole page with it. */
+  html, body, .list, .article, .convo .log, .menu, .dialog .dbody, #filter-menu { overscroll-behavior: none; }
+  /* Pull to refresh (phones, the story list only; app.js opens it). The gap a pull opens is filled with the reader's own progress bar: it
+     fills as you pull, and once you let go past the mark its blocks march while the feed refreshes. */
+  #pull { display: none; height: 0; overflow: hidden; } #pull.ease { transition: height .18s ease-out; }
+  #pull .pl { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; font: 300 12px var(--mono); letter-spacing: .04em; color: var(--paper-soft); }
+  #pull .mini-bar { width: 150px; height: 14px; } #pull.armed #pull-t { color: var(--paper-ink); }
+  #pull.go #pull-bar { width: 100% !important; animation: march .5s linear infinite; }
+  @keyframes march { to { background-position: 6px 0; } }
+  @media (prefers-reduced-motion: reduce) { #pull.go #pull-bar { animation: none; } #pull.ease { transition: none; } }
+  @media (max-width: 700px) { #pull { display: block; } .window.gossip #pull { display: none; } }
+  /* main split */
+  .main { flex: 1; min-height: 0; display: flex; padding: 4px; gap: 0; }
+  .list.sunken, .article.sunken { background: var(--paper); }
+  .list { position: relative; width: 36%; min-width: 260px; max-width: 60%; overflow: auto; background: var(--paper); color: var(--paper-ink); flex: none; }
+  .split { width: 6px; cursor: col-resize; flex: none; }
+  .split:hover { background: var(--lighter); }
+  .article { flex: 1; min-width: 0; overflow: auto; background: var(--paper); color: var(--paper-ink); }
+  .article { container-type: inline-size; }
+
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  thead th { position: sticky; top: 0; z-index: 1; text-align: left; font: 300 10px var(--mono); letter-spacing: .05em; padding: 2px 6px; background: var(--face); white-space: nowrap; cursor: default; user-select: none;
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light), inset -2px -2px var(--shade), inset 2px 2px var(--lighter); }
+  thead th.sorted::after { content: " ▲"; font-size: 8px; } thead th.sorted.desc::after { content: " ▼"; }
+  tbody td { padding: 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px dotted var(--paper-rule); cursor: default; }
+  tbody td.t { white-space: normal; vertical-align: top; line-height: 1.3; }
+  tbody td.t .hl { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; font-weight: 500; letter-spacing: -.005em; line-height: 1.2; }
+  tbody tr.unread td.t .hl { font-weight: 600; }
+  td .sub { font: 300 9.5px var(--mono); letter-spacing: .03em; margin-top: 2px; }
+  td .sub .when { font: inherit; }
+  tbody tr.unread td.t .hl { font-weight: bold; }
+  /* new since you were last here: a light wash of the state colour behind the row and a hairline of it down the left edge. Not a badge, not a label.
+     (At 7% with no edge it could not be seen on a desktop screen.) */
+  #rows tr.fresh:not(.sel) td { background: color-mix(in srgb, var(--accent) 13%, transparent); }   /* never over the selected row */
+  #rows tr.fresh td.star { box-shadow: inset 2px 0 var(--accent); }   /* the hairline shows on the open story's row too */
+  tbody tr.sel td { background: var(--sel); color: var(--on-sel); }
+  tbody tr.sel .sub { color: var(--on-sel-soft); }
+  tbody tr.grp td { background: var(--face); font-weight: bold; box-shadow: inset 0 1px var(--light), inset 0 -1px var(--shade); }
+  .sw { display: inline-block; width: 9px; height: 9px; box-shadow: inset 0 0 0 1px #000; margin-right: 6px; vertical-align: -1px; }
+  td .sub { display: block; font-size: 10px; color: var(--paper-soft); font-weight: normal; }
+  td.ico { padding-left: 20px; position: relative; }
+  td.ico::before { content: ""; position: absolute; left: 7px; top: 6px; width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--shade); }
+  tr.unread td.ico::before { background: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  tr.sel td.ico::before { box-shadow: inset 0 0 0 1px var(--on-sel-soft); }
+  tr.sel.unread td.ico::before { background: var(--on-sel-accent); box-shadow: none; }
+  /* The first column is empty until a row has something to say: a star once the story is saved, a ticked box while it is selected. */
+  td.star { text-align: center; padding: 2px 0; color: var(--saved); font-size: 12px; cursor: default; box-shadow: inset 4px 0 0 var(--pc, transparent); }
+  tbody tr.sel td.star { color: var(--on-sel-accent); }
+  td.star input, #pick-all input { margin: 0; pointer-events: none; }
+  /* With a mouse there is no swipe and no long press, so the row under the pointer shows what a click can do: an empty tick box in the first
+     column (click it to select the story; a saved row's star gives way to it), and a star at the row's right end (click it to save or unsave).
+     Once anything is selected, every row shows its box. */
+  #rows .sv { display: none; }
+  @media (hover: hover) and (pointer: fine) {   /* having a mouse, not having a wide window: a desktop window made narrow still gets these */
+    #rows tr[data-id]:not(.pick):hover td.star > *, #rows.selecting tr[data-id]:not(.pick) td.star > * { display: none; }
+    #rows tr[data-id]:not(.pick):hover td.star::before, #rows.selecting tr[data-id]:not(.pick) td.star::before { content: ""; display: inline-block; width: 13px; height: 13px; vertical-align: -2px; background: var(--field);
+      box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+    #rows td.t { padding-right: 22px; }
+    #rows tr[data-id]:hover .sv { display: block; position: absolute; right: 5px; top: 2px; font-size: 13px; line-height: 1.2; color: var(--shade); cursor: default; }
+    #rows tr.saved:hover .sv { color: var(--saved); } #rows tr.sel:hover .sv { color: var(--on-sel-soft); } #rows tr.sel.saved:hover .sv { color: var(--on-sel-accent); }
+  }
+  /* selected (a group being marked): a wash of ink and the ticked box, unlike the solid ink of the story that is open */
+  #rows tr.pick:not(.sel) td { background: color-mix(in srgb, var(--black) 15%, transparent); }
+  /* a long press selects a row: it must not also start the phone's own text selection or link preview */
+  #rows { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #list thead th:first-child { text-align: center; padding: 2px 0; }
+  #pick-all { display: grid; place-items: center; width: 100%; padding: 0; background: none; box-shadow: none; }
+  /* the list's last row: the next day's stories, a press away */
+  #rows tr.more td { text-align: center; padding: 7px 6px; font: 300 10px var(--mono); letter-spacing: .04em; color: var(--paper-soft); white-space: normal; }
+  #rows tr.more td:hover { background: var(--paper-box); color: var(--paper-ink); }
+  /* Swipe a row to the right (phones) and it follows the finger a short way; what shows behind it is the star and the word for what letting go will do. */
+  #swipe-under { display: none; position: absolute; left: 0; right: 0; align-items: center; gap: 8px; padding-left: 12px; font: 300 12px var(--mono); letter-spacing: .04em; color: var(--paper-ink); background: color-mix(in srgb, var(--saved) 26%, var(--paper)); pointer-events: none; }
+  #swipe-under.on { display: flex; } #swipe-under b { font: 400 18px/1 var(--font); color: var(--saved); } #swipe-under:not(.armed) span { opacity: .55; }
+  #rows tr.swiping td { background: var(--paper); transform: translateX(var(--sx, 0px)); } #rows tr.settle td { transition: transform .16s ease-out; }
+  @media (prefers-reduced-motion: reduce) { #rows tr.settle td { transition: none; } }
+  button.on { background: var(--accent-soft); box-shadow: inset 1px 1px var(--dark), inset -1px -1px var(--light), inset 2px 2px var(--shade), inset -2px -2px var(--lighter); }
+  /* shown from first paint until the list is drawn (renderList replaces the rows); a ring of eight steps, in ink */
+  #rows tr.loading td { text-align: center; padding: 48px 10px; color: var(--paper-soft, var(--shade)); font: 300 12px var(--mono); letter-spacing: .05em; }
+  .spin { display: inline-block; width: 14px; height: 14px; margin-right: 10px; vertical-align: -3px; border: 3px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .9s steps(8) infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+  td.empty { text-align: center; color: var(--shade); padding: 30px 10px; white-space: normal; }
+
+  /* article */
+  /* the bar and, on phones, the running head that hangs under it once the headline has scrolled away, stay at the top of the story together */
+  .article .pinopen { display: none; }
+  .article .top { position: sticky; top: 0; z-index: 2; flex: none; } .article .pin { display: none; }
+  .article .hdr { background: var(--face); padding: 4px 6px; display: flex; gap: 6px; align-items: center; border-bottom: 1px solid var(--shade); flex-wrap: wrap; }
+  .article .hdr > span { white-space: nowrap; }
+  .article .hdr { border-bottom: 3px solid var(--pc, var(--shade)); }
+  .article .hdr .pubname { font: 300 10px var(--mono); letter-spacing: .05em; color: var(--black); display: inline-flex; align-items: center; gap: 6px; }
+  .article .hdr > span:not(.pubname) { font: 300 10px var(--mono); letter-spacing: .05em; }
+  .article .hdr .pubname::before { content: ""; width: 8px; height: 8px; background: var(--pc); box-shadow: inset 0 0 0 1px rgba(0,0,0,.35); }
+  .article .doc { border-left: 1px solid var(--pc, var(--black)); margin: 14px 0 0 22px; padding: 4px 36px 60px 22px; }
+  .article .doc .label { font: 400 10.5px var(--mono); letter-spacing: .05em; color: var(--paper-ink); margin-bottom: 22px; }
+  .article .doc h1 { position: relative; padding: 8px 10px; margin: 0 0 14px -10px; }
+  .article .doc h1::before, .article .doc h1::after { content: ""; position: absolute; width: 10px; height: 10px; border: 1px solid var(--paper-ink); opacity: .55; }
+  .article .doc h1::before { left: 0; top: 0; border-right: 0; border-bottom: 0; }
+  .article .doc h1::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+  .article .hdr .mono { font-family: var(--mono); font-size: 10px; margin-left: auto; color: var(--dim); }
+  .article .doc { font: 400 17px/1.25 var(--font); letter-spacing: .04em; max-width: 760px; }
+  .article .doc h1 { font: 500 32px/.98 var(--font); letter-spacing: -.012em; margin: 0 0 8px; }
+  .article .doc { line-height: var(--lh, 1.25); }   /* View → Line spacing: the story's text; headlines keep their own */
+  .article .doc .by { color: var(--paper-soft); font: 300 10px var(--mono); letter-spacing: .05em; margin-bottom: 10px; }
+  /* Everything in a story sits in one column and stays inside it: pictures, captions, tables, quoted and preformatted text.
+     Pictures line up on the column's left edge with their captions; none is wider than the column or taller than a comfortable read. */
+  .article .doc .hero { display: block; max-width: 100%; max-height: 340px; object-fit: cover; margin: 4px 0 18px; }
+  html[data-tint="1"] .article .doc .hero { filter: grayscale(1) contrast(1.04) brightness(var(--img-dim)); }
+  .article .doc::after { content: ""; display: block; clear: both; }
+  .article .doc { overflow-wrap: anywhere; }
+  .article .doc img, .article .doc video { max-width: 100%; max-height: 420px; width: auto; height: auto; display: block; margin: 16px 0 6px; filter: brightness(var(--img-dim)); }
+  .article .doc figure, .article .doc picture { display: block; max-width: 100%; margin: 16px 0; text-align: left; } .article .doc figure img { margin: 0 0 6px; }
+  .article .doc figcaption { text-align: left; margin-bottom: 4px; }
+  .article .doc table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: .85em; } .article .doc td, .article .doc th { white-space: normal; border-bottom: 1px dotted var(--paper-rule); padding: 3px 8px 3px 0; position: static; background: none; box-shadow: none; font: inherit; }
+  .article .doc pre { max-width: 100%; overflow-x: auto; font: 300 12px var(--mono); } .article .doc blockquote { margin: 14px 0; padding-left: 14px; border-left: 2px solid var(--paper-rule); }
+  .article .doc h2, .article .doc h3, .article .doc h4 { font: 600 1.05em/1.2 var(--font); letter-spacing: 0; margin: 22px 0 8px; }
+  .article .doc ul, .article .doc ol { padding-left: 22px; } .article .doc audio { max-width: 100%; }
+  .article .doc p:first-of-type { margin-top: 0; }
+  .article .doc figcaption { font: 300 10px var(--mono); letter-spacing: .04em; color: var(--paper-soft); }
+  .article .doc a { color: var(--paper-link); }
+  .article .doc .src { margin-top: 26px; font: 300 10px var(--mono); letter-spacing: .04em; }
+  .article .doc .support { margin-top: 10px; font: 400 10.5px var(--mono); letter-spacing: .04em; padding: 7px 10px; border: 1px solid var(--paper-rule); background: var(--paper-box); display: inline-block; }
+  .article .doc .support .to, .article .doc .support.none { color: var(--paper-soft); } .article .doc .support { white-space: normal; }
+  .article .doc .report { cursor: pointer; text-decoration: underline; color: var(--paper-soft); }
+  .article .doc .cats { font: 300 10px var(--mono); letter-spacing: .04em; color: var(--paper-soft); margin-top: 8px; }
+  .article { display: flex; flex-direction: column; }
+  .article .doc { flex: none; }
+  .article .frame { flex: 1; min-height: 0; display: none; background: var(--paper); }
+  .article .frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .article.site .doc { display: none; } .article.site .frame { display: block; }
+  .article .hdr button { padding: 1px 8px; font-size: 10px; }
+  .article .hdr button.on { background: var(--accent-soft); }
+  /* The story's own bar on a phone is five pictographs, drawn like the toolbar's: back, save (outline star, solid once saved), read or unread
+     (the envelope), open, share. Each keeps its words in a label. The two-state marks swap by class. */
+  .article .hdr .pm { display: inline-block; vertical-align: -2px; } .article .hdr .back .pm { margin-right: 4px; }
+  .article .hdr .st-on, .article .hdr .on > .st-off, .article .hdr .env-open, .article .hdr .toread > .env-shut { display: none; }
+  .article .hdr .on > .st-on, .article .hdr .toread > .env-open { display: inline-block; }
+  .article button.tag { font: 300 10px var(--mono); letter-spacing: .03em; padding: 2px 8px; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .article button.tag { font-size: var(--tagfs, 10px); }   /* fitTags() (app.js) lowers --tagfs on the row until no label is cut, down to 8px */
+  .article .doc .tags { display: flex; gap: 6px; margin: 0 0 18px; overflow: hidden; } .article .doc .tags:empty { display: none; }
+  .article .doc .label .sw { width: 8px; height: 8px; margin-right: 7px; vertical-align: 0; }
+  .article .doc .excerpt { background: var(--paper-box); border: 1px solid var(--paper-rule); padding: 8px 12px; margin: 18px 0; font: 400 11.5px var(--font); letter-spacing: .01em; }
+  .article .doc .excerpt button { margin: 4px 6px 0 0; }
+  .article .blank { display: grid; place-items: center; height: 100%; color: var(--paper-soft); }
+
+  .shade { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; background: rgba(0,0,0,.25); }
+  .shade.on { display: grid; }
+  .dialog { width: min(900px, calc(94 * var(--vw, 1vw))); max-height: calc(90 * var(--vh, 1vh)); display: flex; flex-direction: column; padding: 3px; }
+  .dialog .dbody { min-height: 0; padding: 10px; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+  .dialog table { table-layout: auto; }
+  .dialog td, .dialog th { white-space: nowrap; }
+  .dialog td input[type=text] { font: 11px var(--font); border: 0; padding: 2px 4px; width: 100%; box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); background: var(--field); }
+  .dialog td input[type=color] { width: 26px; height: 18px; padding: 0; border: 1px solid #000; background: none; }
+  .dialog td.feed { max-width: 260px; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .dialog td.st { font-family: var(--mono); font-size: 10px; }
+  .dialog td.st.bad { color: var(--accent); }
+  .dialog fieldset { border: 0; padding: 6px 10px 10px; margin: 0; }
+  .dialog legend { padding: 0 3px; }
+  .dialog .addrow { display: flex; gap: 6px; align-items: center; }
+  .dialog .addrow input[type=text] { flex: 1; font: 11px var(--mono); border: 0; padding: 3px 5px; box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); background: var(--field); }
+  .dialog .found { margin-top: 8px; display: none; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .dialog .found.on { display: flex; }
+  .dialog .found input[type=text] { font: 11px var(--font); border: 0; padding: 2px 4px; box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); background: var(--field); }
+  .dialog .msg { font: 300 10px var(--mono); color: var(--dim); min-height: 14px; }
+  #cat-list .grp { font-weight: 600; margin: 6px 0 2px; }
+  #cat-list label { display: flex; gap: 6px; align-items: baseline; padding: 2px 0; }
+  #cat-list label.have { color: var(--shade); }
+  #cat-list .sw { flex: none; align-self: center; }
+  #cat-list .hd { font: 300 9.5px var(--mono); color: var(--dim2); }
+  .dialog .msg.bad { color: var(--accent); }
+  .dialog .dbtns { display: flex; gap: 6px; justify-content: flex-end; padding: 6px 10px 8px; }
+  .dialog .dbtns button { min-width: 90px; }
+  /* Stories by publisher (the operator's report): one row per feed. A small column chart of stories per day, all rows on one scale so they
+     compare; the count; and how long since its latest story, in words, so a feed gone quiet stands out. */
+  @media (min-width: 701px) { #volshade .dialog, #readshade .dialog { width: min(780px, calc(94 * var(--vw, 1vw))); } }
+  #readshade .titlebar .wb { display: block; }   /* closes it, as the × does in My Account; there is no separate Close button */
+  #vol-range, #vol-sum, #read-range, #read-sum, #read-view { flex: none; white-space: normal; }
+  #vol-body, #read-body { padding: 4px 8px; overflow: auto; min-height: 80px; color: var(--paper-ink); background: var(--paper); }
+  .vhead, .vrow { display: grid; grid-template-columns: minmax(0, 1fr) 190px 46px 84px 54px; gap: 10px; align-items: center; padding: 4px 0; border-bottom: 1px dotted var(--paper-rule); }
+  #vol-body.nofol .vhead, #vol-body.nofol .vrow, #read-body .vhead, #read-body .vrow { grid-template-columns: minmax(0, 1fr) 190px 46px 84px; } #read-body .vsec { font: 300 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--paper-soft); padding: 12px 0 2px; } #read-body .vsec:first-child { padding-top: 4px; } #vol-body.nofol .vf { display: none; }
+  .vhead { position: sticky; top: -4px; background: var(--paper); font: 300 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--paper-soft); border-bottom: 1px solid var(--shade); }
+  .vhead span:nth-child(n+3), .vt, .vl, .vf { text-align: right; }
+  .vn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vbars { display: flex; align-items: flex-end; gap: 1px; height: 22px; border-bottom: 1px solid var(--paper-rule); } .vbars i { flex: 1; min-width: 0; background: var(--pc, var(--black)); }
+  .vt { font: 400 12px var(--mono); } .vl, .vf { font: 300 10px var(--mono); white-space: nowrap; } .vl.bad { color: var(--accent); font-weight: 400; }
+  #volshade .addrow button.on, #readshade .addrow button.on { background: var(--accent-soft); }
+  /* Top inviters (the operator's report): one row per person, a bar for the accounts their link brought in, all on one scale, and the count. */
+  @media (min-width: 701px) { #invshade .dialog { width: min(460px, calc(94 * var(--vw, 1vw))); } }
+  #inv-sum { flex: none; white-space: normal; }
+  #inv-body { padding: 4px 8px; overflow: auto; min-height: 80px; color: var(--paper-ink); background: var(--paper); }
+  .irow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 34px; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dotted var(--paper-rule); }
+  .ibar { height: 12px; border-left: 1px solid var(--paper-rule); } .ibar i { display: block; height: 100%; min-width: 2px; background: var(--paper-ink); }
+  .status { display: flex; gap: 3px; padding: 3px 3px 2px; }
+  .status span { font: 300 10px var(--mono); letter-spacing: .03em; padding: 2px 6px; box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status span.g { flex: 1; min-width: 0; }
+  .status #s2 { flex: none; }
+  /* How far through the open story: the same drawn bar as Today's, in the one-screen layout, where the story fills the screen and there is
+     no scroll bar to judge by. It is the share of the story scrolled past, so it holds at any text size or line spacing. */
+  .status #s-prog { display: none; }   /* the story counts are never cut short; in a small or enlarged window the other cells give way first */
+
+  /* floating chart window (View → Story volume) */
+  /* the Story volume view of My reading: how many stories arrived in the last 72 hours */
+  #vol72 .stats { display: flex; gap: 18px; padding: 2px 0 6px; } #vol72 .stats b { font: 400 16px/1 var(--mono); color: var(--black); display: block; }
+  #vol72 .k { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); } #vol72-box { height: 190px; padding: 3px; } #vol72-box canvas { display: block; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .article .hdr .back { display: none; }
+  /* wide screens: the header's three groups flow as one line, and the phone-only action row is hidden */
+  .article .hdr .h1 { display: contents; } .article .hdr .h3, .article .hdr .sm { display: none; }
+  .article .hdr .when { font: 300 10px var(--mono); letter-spacing: .05em; white-space: nowrap; } .article .hdr .mono { order: 2; }
+  /* The Gossip Column (chat.js): the friends list takes the story list's place and a conversation takes the story's. Like the tag view it is
+     a place you visit, with a bar above it and the way back; the toolbar is out of play. State lives on .window: `gossip` (the panel is open),
+     `talking` (a friend is picked; on a phone, the second screen), `gstory` (a story opened from a card, with a back button to the conversation). */
+  #gossip, #gossipbar, .convo { display: none; }
+  .menu .row.gos, .window.gossip .menu .row.feed { display: none; } .window.gossip .menu .row.gos { display: flex; }
+  .menu .hrow.gos, .window.gossip .menu .hrow.feed { display: none !important; } .window.gossip .menu .hrow.gos { display: grid !important; }
+  .window.gossip #gossipbar { display: flex; } .window.gossip .strip { display: none; } #gossip-me { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .window.gossip #list > table { display: none; } .window.gossip #gossip { display: block; }
+  .window.gossip #article { display: none; } .window.gossip #convo { display: flex; }
+  .window.gossip.gstory #article { display: flex; } .window.gossip.gstory #convo { display: none; }
+  .window.gossip.gstory .article .hdr .back { display: inline-block; }
+  .window.gossip .toolbar > * { visibility: hidden; } .window.gossip.gstory .toolbar > :is(#save, #t-mark, #source, #sendto) { visibility: visible; }
+  /* The strip above the Gossip Column, where the toolbar is when the feed is showing: three fixed slots, in the manner of a desktop's little
+     clocks. New York's weather, your time, and the time where the friend you are talking to is. It never wraps or grows. Wide screens only. */
+  .gadgets { display: none; align-items: center; gap: 6px; padding: 4px 6px; min-height: 34px; border-top: 1px solid var(--light); border-bottom: 1px solid var(--shade); white-space: nowrap; }
+  .gad:not(.stat) { overflow: hidden; }   /* the status slot must not clip: its menu opens out of it */
+  .window.gossip:not(.gstory) .gadgets { display: flex; } .window.gossip:not(.gstory) .toolbar { display: none; }
+  .gad { display: inline-flex; align-items: baseline; gap: 7px; min-width: 0; padding: 3px 9px; background: var(--paper); color: var(--paper-ink); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  /* the fourth slot is yours to write in: an emoji and a line, like an away message. It takes what room is left. */
+  .gad.stat { flex: 1; max-width: 460px; align-items: center; } .gad.stat input { border: 0; background: transparent; color: inherit; font: 400 12px var(--font); padding: 0; min-width: 0; outline: 0; }
+  .gad.stat #gs-pick { flex: none; height: 18px; padding: 0 6px; font-size: 12px; } .gad.stat #gs-text { flex: 1; }
+  .gad.stat .menu { font-family: var(--font); white-space: nowrap; } .egrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; padding: 2px 0 4px; }
+  .egrid button { padding: 0; height: 24px; font-size: 15px; background: transparent; box-shadow: none; } .egrid button:hover { background: var(--sel); }
+  .convo .hdr .st { min-width: 0; overflow: hidden; text-overflow: ellipsis; } .convo .hdr .who { flex: none; max-width: 55%; }   /* a long status gives way, not the name */
+  /* each slot leads with something to look at: a weather sign, a small clock face with real hands, the status emoji */
+  .gad { align-items: center; } .gad .i { flex: none; display: inline-flex; font-size: 14px; line-height: 1; } .gad .face { display: block; }
+  .gad:empty { display: none; } .gad b { font: 400 12px var(--mono); } .gad .x { font: 300 10px var(--mono); color: var(--paper-soft); overflow: hidden; text-overflow: ellipsis; }
+  /* a friend's row is a story's row: the same cells, the same red dot for something new. The first column is the green dot for "here now". */
+  #gossip thead th:first-child { text-align: center; padding: 2px 0; }
+  #gossip td.gdot { text-align: center; padding: 2px 0; } #gossip td.gdot i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--shade); }
+  /* The status light, wherever it shows (a friend's row, the conversation's header, the status menu and its button):
+     green is active, empty is away, red is busy, a green ring is "be right back". */
+  .sdot { display: inline-block; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--shade); vertical-align: -1px; }
+  .sdot.active, #gossip td.gdot i.active, .convo .hdr .who i.active { background: var(--green); box-shadow: none; }
+  .sdot.busy, #gossip td.gdot i.busy, .convo .hdr .who i.busy { background: var(--accent); box-shadow: none; }
+  .sdot.brb, #gossip td.gdot i.brb, .convo .hdr .who i.brb { background: transparent; box-shadow: inset 0 0 0 2px var(--green); }
+  .menu .row .sdot { margin-right: 4px; } #gs-pick .sdot { vertical-align: 0; }
+  .gad.stat #gs-any { flex: 1; min-width: 0; font: 12px var(--font); padding: 4px 6px; background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  #gossip td .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* a friend's status in words beside the name, so the light's colour is never the only thing that says it */
+  #gossip .mood { margin-left: 6px; font: 300 10px var(--mono); letter-spacing: .03em; color: var(--paper-soft); } #gossip tr.sel .mood { color: var(--on-sel-soft); }
+  #dd-friends { flex: none; } #g-n { color: var(--accent); font-weight: 600; }
+  @media (min-width: 701px) { #gossip-me { flex: 0 1 auto; } }   /* wide screens: the friends button sits beside your screen name, not at the far right (a phone keeps it under the toolbar's fourth slot) */ #g-menu { padding: 0; white-space: normal; }
+  .gfoot { padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; } .gfoot .msg:empty { display: none; }
+  .gfoot .grow { display: flex; align-items: center; gap: 6px; padding: 1px 0; } .gfoot .grow .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gfoot #g-pending:empty, .gfoot #g-remove:empty { display: none; } .gfoot .k { margin-top: 4px; }
+  .gfoot input[type=text] { flex: 1; min-width: 0; font: 12px var(--font); border: 0; padding: 4px 6px; background: var(--field); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  .gfoot .msg { font: 300 10px var(--mono); color: var(--accent); min-height: 12px; overflow-wrap: anywhere; } .gfoot .msg b { user-select: all; -webkit-user-select: all; } .gfoot .msg .inv { display: block; color: var(--black); } .gfoot .msg .gbtns { margin-top: 6px; }
+  .gfoot .gbtns { display: flex; gap: 6px; }
+  /* the whole friends list, in the friends menu: a heading for each group (it folds), and under it a row for each friend */
+  .gfoot #g-list:empty { display: none; } .gfoot #g-list { display: flex; flex-direction: column; }
+  .gfoot .ghead { font-weight: 600; cursor: default; } .gfoot .ghead .tw { flex: none; width: 10px; font-size: 9px; text-align: center; }
+  .gfoot .grow .c, .gfoot .gfr .mood { flex: none; font: 300 10px var(--mono); color: var(--dim); } .gfoot .gnew { flex: none; font: 400 10px var(--mono); color: var(--accent); }
+  .gfoot .gfr { padding-left: 16px; cursor: default; } .gfoot .gfr button { flex: none; padding: 0 7px; font-size: 10px; }
+  .gfoot .ghead:hover, .gfoot .gfr:hover { background: var(--lighter); }
+  /* the conversation: a plain log on paper, a text box and Send, in gray chrome. Yours in the red, theirs in ink blue. */
+  .convo { flex: 1; min-width: 0; flex-direction: column; background: var(--face); }
+  .convo .blank { flex: 1; display: grid; place-items: center; color: var(--dim2); }
+  .convo .hdr { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-bottom: 1px solid var(--shade); white-space: nowrap; }
+  .convo .hdr .back { display: none; }
+  .convo .hdr .who { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; min-width: 0; } .convo .hdr .who span { overflow: hidden; text-overflow: ellipsis; }
+  .convo .hdr .who i { flex: none; width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--shade); }
+  .convo .hdr .st { font: 300 10px var(--mono); letter-spacing: .05em; margin-left: auto; }
+  .convo .log { flex: 1; min-height: 0; overflow: auto; margin: 6px 6px 0; padding: 8px 10px; background: var(--paper); color: var(--paper-ink); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+  .convo .log p { margin: 0 0 6px; padding: 2px 6px; border-left: 2px solid transparent; }
+  /* Who said what, at a glance, without turning the log into bubbles: a thin rule down the left of every line in the speaker's colour
+     (theirs ink blue, yours the red), and the faintest tint behind your own. */
+  .convo .log p:not(.gone) { border-left-color: color-mix(in srgb, var(--paper-link) 45%, transparent); }
+  .convo .log p.me { border-left-color: color-mix(in srgb, var(--accent) 60%, transparent); background: var(--paper-box); }
+  .convo .log .who { font-weight: 700; color: var(--paper-link); } .convo .log .me > .who { color: var(--accent); }
+  .convo .log .t { font: 300 9px var(--mono); color: var(--paper-soft); margin-left: 6px; white-space: nowrap; }
+  .convo .log .day { font: 300 9.5px var(--mono); letter-spacing: .05em; color: var(--paper-soft); text-align: center; margin: 8px 0; }
+  .convo .log .card { border: 1px solid var(--paper-rule); border-left: 3px solid var(--pc, var(--black)); padding: 6px 8px; margin: 4px 0 8px; display: flex; gap: 8px; align-items: center; background: var(--paper-box); }
+  .convo .log .card img { flex: none; width: 48px; height: 36px; object-fit: cover; }
+  .convo .log .card .ct { flex: 1; min-width: 0; } .convo .log .card .ct b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; line-height: 1.25; } .convo .log .card .ct span { font: 300 9.5px var(--mono); color: var(--paper-soft); }
+  /* what was said about a story stays under its card: comments indented once, replies to a comment once more, and no deeper */
+  .convo .log .thread { margin: -2px 0 10px 12px; padding: 2px 0 0 10px; border-left: 1px solid var(--paper-rule); font-size: 12px; }
+  .convo .log .thread p { margin-bottom: 4px; } .convo .log .thread .rep { margin-left: 16px; }
+  /* a folded story is still a card: the same box and publication colour, slimmed to one line, with its comments put away */
+  .convo .log p.story, .convo .log .card { cursor: pointer; } .convo .log .card .tw { flex: none; width: 8px; font-size: 9px; color: var(--paper-soft); }
+  .convo .log .card.shut { padding: 3px 8px; } .convo .log .card.shut .ct { display: flex; align-items: baseline; gap: 8px; }
+  .convo .log .card.shut .ct b { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .convo .log .card.shut .ct span { flex: none; }
+  .convo .log .card.shut .open { padding: 1px 8px; }
+  /* Delete shows on your own lines: when the pointer is over one, or always where there is no pointer to hover with */
+  .convo .log p.gone { color: var(--paper-soft); font-style: italic; } .convo .log p.gone .who { color: inherit; font-weight: 400; }
+  @media (hover: hover) { .convo .log a.del { visibility: hidden; } .convo .log p:hover > a.del { visibility: visible; } }
+  .convo .log a.act { font: 300 9.5px var(--mono); color: var(--paper-soft); text-decoration: underline; cursor: pointer; margin-left: 6px; white-space: nowrap; } .convo .log .thread > a.act { margin-left: 0; }
+  .convo .compose { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+  .convo .compose .re { display: flex; align-items: center; gap: 6px; font: 300 10px var(--mono); } .convo .compose .re span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .convo .compose .re button { padding: 0 7px; }
+  .convo .compose .crow { display: flex; gap: 6px; align-items: stretch; } .convo .compose .send { min-width: 64px; }
+  .convo textarea { flex: 1; min-width: 0; height: 46px; resize: none; font: 13px var(--font); border: 0; padding: 5px 6px; background: var(--paper); color: var(--paper-ink); box-shadow: inset -1px -1px var(--light), inset 1px 1px var(--shade), inset -2px -2px var(--lighter), inset 2px 2px var(--dark); }
+  .convo .compose .msg { font: 300 10px var(--mono); color: var(--accent); } .convo .compose .msg:empty { display: none; }
+  @media (max-width: 700px) {
+    html, body { height: calc(100 * var(--vh, 1dvh)); }   /* --vh and --vw, not dvh and vw: inside a page scaled by View → Text size, 100dvh is taller than the screen */
+    body { padding: 0; }
+    /* The two fixed bars (four filter slots, five story buttons) are sized to fit a phone exactly, so a larger text size does not
+       scale them: enlarged, their labels and counts would be cut short. Text size enlarges what is read, not these controls. */
+    .toolbar, .article .hdr { zoom: var(--unz, 1); }
+    .window { max-width: none; max-height: none; height: calc(100 * var(--vh, 1dvh)); padding: 0; box-shadow: none; }
+    .titlebar { height: 30px; padding-left: 10px; }
+    .titlebar .wb { display: none; }
+    /* left-aligned as on the desktop; the last item (Sign On, or Help once signed on) is pinned to the right edge so the bar spans the width.
+       The 8px inset matches the toolbar row below, so File sits over the left edge of Place. */
+    .menubar { padding: 4px 8px 5px; } .menubar > span { padding: 4px 9px; }
+    .menubar { align-items: center; gap: 4px; } .menubar button { height: 30px; padding: 0 10px; } .menubar > span { flex: none; } .menubar #menu-help button { width: 30px; padding: 0; }
+    .lg { display: none; }
+    /* One fixed row of four equal slots, each a pictograph: Filter, Saved, Read or unread, Gossip Column. It never wraps, scrolls or grows.
+       Dates, Sources, Topic, Place, Language and Unread only live inside Filter. A new control replaces a slot or goes in a menu. */
+    .toolbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 7px 8px; }   /* not overflow: hidden: the menus hang out of it */
+    .toolbar > .dd > button { width: 100%; }
+    .toolbar button { padding: 7px 8px; }
+    .toolbar .sm { display: inline; }
+    .slot .w { display: none; } .pm { width: 18px; height: 18px; } .slot .n { font-size: 12px; } .slot .w + .n::before { content: none; }
+    /* the Gossip Column's bar lines up with the feed's toolbar: ‹ Feed sits where the funnel is and the friends button where the two figures are,
+       the same width and height as those slots */
+    #gossipbar { gap: 6px; } #gossipbar > #gossip-back, #gossipbar > #dd-friends { flex: 0 0 calc((100% - 18px) / 4); } #gossipbar #g-menu-btn { width: 100%; } #gossipbar button { height: 40px; padding: 0 8px; }
+    /* the story's own buttons live in the story header on phones (see the reading rules below) */
+    .toolbar .sep, .toolbar #prev, .toolbar #next, .toolbar #source, .toolbar #save, .toolbar #t-refresh { display: none; }
+    .toolbar #sendto { display: none !important; }
+    .menu { max-width: calc(100 * var(--vw, 1vw) - 16px); }
+    /* A menu on a phone hangs under the bar its button is in, held to the bar's left edge or (fromright) its right edge. All of it is CSS:
+       the bar is the box the menu is placed against, the menu is as wide as it needs and never wider than the screen less its margins,
+       and it scrolls inside itself when it is taller than the screen. Nothing is measured, so nothing can land off the screen. */
+    .menubar, .toolbar, .tagbar, .gadgets { position: relative; } .dd, .menubar > span { position: static; }
+    .menu.sheet { position: absolute; top: 100%; left: 8px; right: auto; bottom: auto; width: max-content; min-width: 0 !important; max-width: calc(100% - 16px); max-height: calc(var(--vvh, 100dvh) - 210px); overflow: auto; z-index: 1001; margin-top: -3px; padding: 10px 12px; font-size: 13px; }
+    .menu.sheet.fromright, .menubar > .ic .menu.sheet.fromright { left: auto; right: 8px; } .menubar > .ic .menu.sheet { left: 8px; right: auto; }
+    /* The menu's width is a share of its bar (100%), never of the screen (vw): at a larger text size the page is scaled and a vw width
+       runs off the edge. What is inside gives way too: rows of buttons wrap, long labels are cut with an ellipsis, long links break. */
+    .menu.sheet .gbtns { flex-wrap: wrap; } .menu.sheet .row label { min-width: 0; overflow: hidden; text-overflow: ellipsis; } .menu.sheet .row .c { padding-left: 8px; }
+    .menu.sheet .gfoot, .menu.sheet .gfoot .msg { min-width: 0; overflow-wrap: anywhere; }
+    #help-menu .keys, #help-menu .hrow.wd { display: none !important; }   /* no keyboard on a phone: the shortcuts would be noise */
+    .menu .hrow.feed.ph { display: grid !important; } .window.gossip .menu .hrow.feed.ph { display: none !important; }
+    /* one set of measures for every sheet (Filter, Dates, View, File, Edit, Chat, Help): 15px text, 40px rows, 14px side padding */
+    .menu.sheet { padding: 10px 14px; font: 400 15px/1.3 var(--font); letter-spacing: 0; }
+    .menu.sheet .row, .menu.sheet .hrow { min-height: 40px; padding: 0; font: inherit; }
+    .menu.sheet .row.k { min-height: 28px; font: 300 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 0; align-items: flex-end; padding-bottom: 4px; }
+    .menu.sheet .row .k { font: 300 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .menu.sheet .c { font: 300 12px var(--mono); }
+    .menu.sheet hr { margin: 6px 0; } .menu.sheet .btns button { min-height: 36px; font: 400 15px var(--font); padding: 0 10px; } .menu.sheet .btns.ftop { gap: 6px; margin-bottom: 4px; }
+    .menu.sheet a { font: inherit; }
+    #help-menu .hrow { grid-template-columns: 96px 1fr; padding: 4px 0; font: inherit; } #help-menu .help-head { padding-top: 0; }
+    .menu.sheet .only { padding: 6px 10px; font: 300 12px var(--mono); }
+    .menu.sheet .tw { width: 26px; font-size: 14px; align-self: stretch; display: grid; place-items: center; }
+    .menu.sheet input[type=checkbox], .menu.sheet input[type=radio], .wel input[type=checkbox] { width: 17px; height: 17px; margin-right: 8px; }
+    #list input[type=checkbox] { width: 17px; height: 17px; } #list input[type=checkbox]:indeterminate::after { width: 9px; }
+    .menu.sheet input[type=checkbox]:checked::after, .wel input[type=checkbox]:checked::after, #list input[type=checkbox]:checked::after { width: 9px; height: 4px; } .menu.sheet input[type=radio]:checked::after { width: 7px; height: 7px; }
+    /* the question box sits high on a phone so the keyboard never covers it */
+    .ask { place-items: start center; padding-top: calc(14 * var(--vh, 1vh)); } .ask .titlebar { height: 36px; } .ask .titlebar .wb { display: block; width: 34px; height: 26px; font-size: 18px; line-height: 1; padding: 0; }
+    .ask .abody { padding: 14px 14px 4px; } .ask p { font-size: 15px; line-height: 1.35; } .ask .abtns { padding: 8px 14px 14px; } .ask .abtns button { font: 400 15px var(--font); min-height: 36px; padding: 0 12px; }
+    #sheet-shade.on { position: fixed; inset: 0; z-index: 1000; }   /* catches the tap that closes a menu; nothing is dimmed */
+    /* iOS zooms the whole page when a field's text is under 16px; at 16px it leaves the page alone */
+    input:not([type=checkbox]):not([type=radio]):not([type=color]), textarea, select { font-size: 16px !important; }
+    .datebtn { font: inherit; min-height: 36px; padding: 0 10px; } #cal { padding: 8px; } #cal .calhead { font-size: 15px; } #cal .calhead button { padding: 6px 14px; }
+    #cal .calgrid i { font-size: 11px; } #cal .calgrid button { padding: 10px 0; font-size: 15px; }
+    /* two screens instead of two panes */
+    .main { padding: 0; position: relative; }
+    .split { display: none; }
+    .list { width: 100% !important; max-width: none; min-width: 0; }
+    .article { display: none; }
+    .window.reading .list { display: none; }
+    .window.reading .article { display: flex; }
+    /* Reading a story: one fixed bar above it. ‹ List on the left, the story's actions beside it; the toolbar is hidden.
+       What the story is (publication, date, tags) sits in the story itself, above and below the headline. Nothing here wraps. */
+    .window.reading .toolbar, .window.reading .strip, .window.reading .tagbar { display: none; }
+    .tagbar { padding: 7px 8px; font-size: 13px; } .tagbar button { padding: 7px 12px; flex: none; }
+    /* The Gossip Column on a phone: two screens, friends then the conversation, like list and story. The window is as tall as what is
+       visible above the keyboard (--vvh), so the text box is never under it. Sizes are the phone type scale. */
+    .window.gossip { height: var(--vvh, 100dvh); align-self: start; }
+    .window.gossip .toolbar, .window.gossip #convo { display: none; }
+    /* on a phone the strip is one slim row on the friends screen, like the corner of a desktop's taskbar: a weather sign and the temperature,
+       a clock face and the time, and the status. No labels; they are in the tooltips. The friend's clock is in the conversation's header. */
+    .window.gossip.talking .gadgets, .window.gossip.gstory .gadgets { display: none; } .window.gossip:not(.talking):not(.gstory) .gadgets { display: flex; gap: 6px; padding: 6px 8px; min-height: 0; }
+    /* a phone shows the time itself, so the clock gives its room to the status; while the status is being typed it has the whole row */
+    .gadgets #gd-them, .gadgets #gd-you, .gad .k, .gad .x { display: none; } .gadgets:has(#gs-text:focus) #gd-wx { display: none; } .gad { flex: none; min-height: 30px; padding: 0 8px; gap: 6px; } .gad b { font-size: 13px; }
+    .gad.stat { flex: 1; min-width: 0; max-width: none; padding: 0 8px 0 3px; } .gad.stat #gs-pick { height: 24px; padding: 0 7px; font-size: 14px; }
+    .menu.sheet .egrid button { height: 40px; font-size: 22px; }
+    .window.gossip.talking .list, .window.gossip.talking #gossipbar, .window.gossip.talking:not(.gstory) .status { display: none; }
+    .window.gossip.talking:not(.gstory) #convo { display: flex; }
+    #gossip thead th:first-child { padding: 8px 0; font-size: 11px; } #gossip td.gdot { padding: 9px 0; } #gossip td.gdot i { width: 9px; height: 9px; }
+    #gossip td.ico::before { top: 15px; } #gossip tbody td.t .hl { font-size: 15px; } #gossip td .sub { font-size: 12px; } #gossip tbody tr { height: 40px; }
+    .gfoot { padding: 14px; gap: 10px; font: 400 15px/1.35 var(--font); } .gfoot .k { font: 300 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .gfoot .grow { min-height: 40px; padding: 0; } .gfoot button { font: 400 15px var(--font); min-height: 36px; padding: 0 12px; } .gfoot .msg { font: 300 12px var(--mono); }
+    .gfoot .gfr { padding-left: 20px; } .gfoot .gfr button { font: 400 15px var(--font); padding: 0 10px; } .gfoot .grow .c, .gfoot .gfr .mood, .gfoot .gnew { font-size: 12px; } .gfoot .ghead .tw { width: 14px; font-size: 13px; }
+    .convo .hdr { padding: 7px 8px; font-size: 15px; border-top: 1px solid var(--light); } .convo .hdr .back { display: block; flex: none; height: 30px; padding: 0 12px; } .convo .hdr .st { font-size: 12px; }
+    .convo .log { margin: 8px 8px 0; padding: 10px 14px; font-size: 15px; line-height: 1.35; } .convo .log .thread, .convo .log .card .ct b { font-size: 15px; }
+    .convo .log .t, .convo .log .day, .convo .log a.act, .convo .log .card .ct span { font: 300 12px var(--mono); } .convo .log .card .tw { width: 10px; font-size: 12px; }
+    .convo .log .card.shut { padding: 4px 8px; } .convo .log .card.shut .ct { display: block; } .convo .log .card.shut .open { min-height: 30px; } .convo .log a.act { display: inline-block; padding: 5px 2px; }
+    .convo .log .card button, .convo .compose .send { font: 400 15px var(--font); min-height: 36px; padding: 0 12px; }
+    .convo .compose { padding: 8px; gap: 6px; } .convo .compose .re, .convo .compose .msg { font: 300 12px var(--mono); } .convo .compose .re button { min-height: 30px; padding: 0 10px; font-size: 15px; }
+    .convo textarea { height: 52px; }
+    /* installed on a Home Screen the page runs to the screen's edge: keep clear of the rounded corners and the home indicator */
+    .window { padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    .strip { padding: 8px 10px; font-size: 13px; } .strip .sm { display: inline; }
+    /* every button in the bar is the same width and the same height, with the same gap between them: a grid of equal columns, however many there are */
+    .article .hdr { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); align-items: stretch; gap: 6px; padding: 7px 8px; border-top: 1px solid var(--light); }
+    .article .hdr .h3 { display: contents; }
+    .article .hdr .pubname, .article .hdr .when, .article .hdr .mono, .article .hdr #b-site { display: none; }
+    .article .hdr button, .article .hdr .back { display: block; min-width: 0; height: 30px; margin: 0; padding: 0 3px; font: 500 11.5px/1 var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .article .hdr .pm { vertical-align: middle; } .article .hdr .back .pm { margin-right: 0; }
+    /* The running head: two short lines, each cut with dots, in the story's own faces. Outlet, date and byline in the small mono print; the
+       headline under them. It appears when they have scrolled out of sight (app.js sets `pinned`) and lies over the text. */
+    .article.pinned .pin { display: block; position: absolute; left: 0; right: 0; top: 100%; padding: 5px 12px 6px; background: var(--paper); color: var(--paper-ink); border-bottom: 1px solid var(--shade); }
+    .pin .pl, .pin .ph { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pin .pl { font: 300 12px/1.35 var(--mono); color: var(--paper-soft); } .pin .pl .sw { display: inline-block; width: 9px; height: 9px; margin-right: 6px; box-shadow: inset 0 0 0 1px var(--paper-ink); }
+    .pin .ph { font: 500 15px/1.25 var(--font); letter-spacing: -.01em; }
+    .article.pinned .pin { cursor: pointer; }
+    /* Open (the outlet's own site): a bare globe hung under the right end of the bar, in the sticky .top, so it is on screen whether or not the
+       running head is. The head's text and the story's first line keep clear of it. */
+    .article .pinopen { display: flex; position: absolute; right: 2px; top: 100%; margin: 3px 0 0; width: 40px; height: 40px; min-width: 0; padding: 0; align-items: center; justify-content: center; background: none; border: 0; box-shadow: none; color: var(--paper-ink); }
+    .article.pinned .pin { padding-right: 46px; } .article .doc .label { padding-right: 40px; }
+    .article .pinopen .pm { width: 18px; height: 18px; margin: 0; } .article .pinopen.on { color: var(--accent); }
+    .article .doc .label { font-size: 11.5px; margin-bottom: 16px; } .article .doc .label .sw { width: 10px; height: 10px; }
+    .article .doc .by { font-size: 11px; }
+    .article button.tag { padding: 5px 9px; font-size: var(--tagfs, 11px); } .article .doc .tags .tag:nth-child(n+4) { display: none; }
+    /* bigger tap targets */
+    /* the list keeps its column headings on a phone: tap Date to turn the order round; the first is the select-all box */
+    .dialog thead { display: none; }
+    #list col:first-child { width: 34px !important; } #list col:last-child { width: 78px !important; }
+    #list thead th { padding: 8px 8px; font-size: 11px; } #list thead th:first-child { text-align: center; padding: 8px 0; font-size: 14px; } #list thead th:last-child { text-align: right; }
+    tbody td { padding: 9px 8px; }
+    td.star { width: 30px; font-size: 16px; padding: 9px 0; }
+    #rows tr.more td { font: 300 12px var(--mono); padding: 13px 8px; }
+    tbody td.t .hl { font-size: 14px; }
+    td .sub { font-size: 10.5px; margin-top: 4px; }
+    .article .doc { margin: 10px 0 0 10px; padding: 4px 14px 50px 14px; font-size: 16px; }
+    .article .doc h1 { font-size: 26px; }
+    .article .doc .hero { max-height: 220px; margin: 0 0 16px; } .article .doc img, .article .doc video { max-height: 300px; }
+    /* dialog and chart fill the screen */
+    .dialog { width: calc(100 * var(--vw, 1vw)); max-height: calc(100 * var(--vh, 1dvh)); height: calc(100 * var(--vh, 1dvh)); }
+    .dialog table { table-layout: fixed; } .dialog td.feed { max-width: 120px; }
+    #readshade { place-items: start center; } #readshade .dialog { height: auto; }   /* only as tall as what it shows, at the top, like My Account; the body scrolls if it grows past the screen */
+    .vhead, .vrow, #vol-body.nofol .vhead, #vol-body.nofol .vrow, #read-body .vhead, #read-body .vrow { grid-template-columns: minmax(0, 2fr) minmax(36px, 1fr) 30px 62px; gap: 8px; min-height: 40px; } #vol-body .vf { display: none; }
+    #readshade .titlebar { height: 36px; } #readshade .titlebar .wb { width: 34px; height: 26px; min-height: 0; font-size: 18px; line-height: 1; padding: 0; }
+    #readshade .k { font: 300 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }   /* the capital labels every phone window uses */
+    .vn { font-size: 15px; } .vt, .vl { font: 300 12px var(--mono); } .vhead { font: 300 10.5px var(--mono); min-height: 28px; }
+    #volshade .addrow, #readshade .addrow { flex-wrap: wrap; } #volshade .addrow button, #volshade .dbtns button, #readshade .addrow button, #readshade .dbtns button { font: 400 15px var(--font); min-height: 36px; padding: 0 12px; } #volshade .msg { font: 300 12px var(--mono); }
+    .status span:not(.g) { display: none; }
+    .window.reading .status #s-prog:not(.off) { display: inline-block; flex: none; } .window.reading .status #s-prog:not(.off) span { display: inline-block; }
+    /* One bar at the right of the status bar, whichever screen is showing: on the list, how much of today's stories have been read (the
+       counts beside it already say "Today", so the bar carries no word); on a story, how far through it. Never both: they would not fit. */
+    .status #s-today { display: inline-block; flex: none; } .status #s-today span { display: inline-block; } .status #s-today .lbl { display: none; }
+    .window.reading .status #s-today, .window.gossip .status #s-today { display: none; }
+    .status #s-prog .mini-bar, .status #s-today .mini-bar { width: 56px; }
+    .status #s-prog #prog-pct, .status #s-today #read-pct { min-width: 4ch; text-align: right; font-family: var(--mono); box-shadow: none; padding: 0; }
+    /* Fingertips: the bars keep their height, and the room moves from each bar's padding into its buttons, so what you tap is 36 to 38px
+       tall where it was 24 to 30. Small links in a conversation get a tall invisible margin the same way. */
+    .menubar { padding: 0 8px; } .menubar > span { padding: 10px 9px; }
+    /* the ? keeps its drawn size (30px) and gets an invisible margin so a fingertip still finds it */
+    .menubar #menu-help button { position: relative; } .menubar #menu-help button::after { content: ""; position: absolute; inset: -7px -3px; }
+    .toolbar { padding: 3px 8px; } .toolbar button { padding: 11px 8px; }
+    .article .hdr { padding: 3px 8px; } .article .hdr button, .article .hdr .back { height: 38px; }
+    .tagbar { padding: 3px 8px; } .tagbar button { padding: 11px 12px; }
+    .convo .hdr { padding: 3px 8px; } .convo .hdr .back { height: 38px; }
+    .article button.tag { padding: 9px 10px; } .convo .log a.act { padding: 11px 6px; margin: -6px 0; } .convo .log .card .open { min-height: 38px; }
+    #gossip .mood { font-size: 12px; }
+  }
+  /* A phone on its side is too short for either layout. Short AND wide means a phone in landscape: tablets and unfolded foldables are taller,
+     and the width floor keeps a portrait phone with its keyboard up from matching. */
+  /* A narrow window on a computer gets the phone layout but has a mouse, not a finger: it cannot pull the list down. So there the toolbar
+     is five equal slots, Refresh first, and Help speaks of the mouse. A phone (no hover, a coarse pointer) keeps its four. */
+  @media (max-width: 700px) and (hover: hover) and (pointer: fine) {
+    .toolbar { grid-template-columns: repeat(5, minmax(0, 1fr)); } .toolbar #t-refresh { display: inline-flex; }
+    #gossipbar > #gossip-back, #gossipbar > #dd-friends { flex: 0 0 calc((100% - 24px) / 5); }
+    .window:not(.gossip) #help-menu .hrow.feed.wd { display: grid !important; } .menu .hrow.feed.ph:not(.any) { display: none !important; }
+    #help-menu .keys { display: block !important; }
+  }
+  /* Help for a story that is open on a phone (the phone layout, with a finger or a mouse): the story bar's own marks, not the feed's. */
+  #help-menu .row.story, #help-menu .hrow.story { display: none; }
+  #help-menu .hrow.tagonly { display: none !important; }   /* the way back from a tag or outlet view: listed only while one is open */
+  .window.tagview:not(.reading):not(.gossip) #help-menu .hrow.tagonly.ph { display: grid !important; }
+  @media (max-width: 700px) {
+    .window.reading:not(.gossip) #help-menu .row.feed, .window.reading:not(.gossip) #help-menu .hrow.feed { display: none !important; }
+    .window.reading:not(.gossip) #help-menu .row.story { display: flex; } .window.reading:not(.gossip) #help-menu .hrow.story { display: grid; }
+  }
+  #rotate { display: none; }
+  @media (orientation: landscape) and (max-height: 500px) and (min-width: 560px) {
+    body > *:not(#rotate) { display: none !important; }
+    #rotate { display: grid; place-items: center; position: fixed; inset: 0; background: var(--desk); }
+    #rotate > div { width: min(340px, calc(80 * var(--vw, 1vw))); padding: 3px; } #rotate p { margin: 0; padding: 14px 14px 16px; font-size: 13px; line-height: 1.45; }
+  }
+  @container (max-width: 560px) { .article .doc .hero { max-height: 200px; margin: 0 0 16px; } .article .doc { margin-left: 12px; padding: 4px 14px 40px 14px; font-size: 15px; } .article .doc h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<!-- the pictographs that menus and Help reuse: drawn once here, shown with <use> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-funnel" viewBox="0 0 16 16"><path d="M1 2h14v2H1zM2 4h12v1H2zM3 5h10v1H3zM4 6h8v1H4zM5 7h6v1H5zM6 8h4v1H6zM7 9h2v5H7z"/></symbol><symbol id="i-star" viewBox="0 0 16 16"><path d="M7 1h2v2H7zM6 3h4v2H6zM1 5h14v1H1zM2 6h12v1H2zM3 7h10v1H3zM4 8h8v2H4zM3 10h10v1H3zM3 11h4v1H3zM9 11h4v1H9zM2 12h4v1H2zM10 12h4v1h-4zM2 13h2v1H2zM12 13h2v1h-2z"/></symbol><symbol id="i-env" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 3h14v10H1zM2 4v8h12V4z"/><path d="M2 4h2v1H2zM3 5h2v1H3zM5 6h1v1H5zM6 7h1v1H6zM7 8h2v1H7zM9 7h1v1H9zM10 6h1v1h-1zM11 5h2v1h-2zM12 4h2v1h-2z"/></symbol><symbol id="i-refresh" viewBox="0 0 16 16"><path d="M4 3h7v2H4zM3 4h1v1H3zM2 5h2v6H2zM3 11h1v1H3zM4 11h8v2H4zM12 11h1v1h-1zM12 8h2v3h-2zM11 1h1v6h-1zM12 2h1v4h-1zM13 3h1v2h-1z"/></symbol><symbol id="i-prev" viewBox="0 0 16 16"><path d="M4 7h1v2H4zM5 6h1v4H5zM6 5h1v6H6zM7 4h1v8H7zM8 3h2v10H8z"/></symbol><symbol id="i-next" viewBox="0 0 16 16"><path d="M11 7h1v2h-1zM10 6h1v4h-1zM9 5h1v6H9zM8 4h1v8H8zM6 3h2v10H6z"/></symbol><symbol id="i-open" viewBox="0 0 16 16"><path d="M5 1h6v1H5zM3 2h2v1H3zM11 2h2v1h-2zM2 3h1v2H2zM13 3h1v2h-1zM1 5h1v6H1zM14 5h1v6h-1zM2 11h1v2H2zM13 11h1v2h-1zM3 13h2v1H3zM11 13h2v1h-2zM5 14h6v1H5zM7 2h2v12H7zM2 7h12v2H2zM4 4h8v1H4zM4 11h8v1H4z"/></symbol><symbol id="i-back" viewBox="0 0 16 16"><path d="M2 7h1v2H2zM3 6h1v4H3zM4 5h1v6H4zM5 4h1v8H5zM6 3h1v10H6zM7 7h7v2H7z"/></symbol><symbol id="i-share" viewBox="0 0 16 16"><path d="M3 3h4v4H3zM2 8h6v1H2zM1 9h8v6H1zM10 1h4v4h-4zM9 6h6v1H9zM8 7h8v1H8zM10 8h6v5h-6z"/></symbol><symbol id="i-pull" viewBox="0 0 16 16"><path d="M7 2h2v7H7zM4 9h8v1H4zM5 10h6v1H5zM6 11h4v1H6zM7 12h2v1H7zM2 14h12v1H2z"/></symbol><symbol id="i-tick" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 2h12v12H2zM3 3v10h10V3z"/><path d="M4 7h1v2H4zM5 8h1v2H5zM6 9h1v2H6zM7 8h1v2H7zM8 7h1v2H8zM9 6h1v2H9zM10 5h1v2h-1zM11 4h1v2h-1z"/></symbol><symbol id="i-x" viewBox="0 0 16 16"><path d="M3 3h2v1h-2zM11 3h2v1h-2zM4 4h2v1h-2zM10 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM6 6h2v1h-2zM8 6h2v1h-2zM7 7h2v1h-2zM7 7h2v1h-2zM8 8h2v1h-2zM6 8h2v1h-2zM9 9h2v1h-2zM5 9h2v1h-2zM10 10h2v1h-2zM4 10h2v1h-2zM11 11h2v1h-2zM3 11h2v1h-2zM12 12h2v1h-2zM2 12h2v1h-2z"/></symbol><symbol id="i-people" viewBox="0 0 16 16"><path d="M3 3h4v4H3zM2 8h6v1H2zM1 9h8v6H1zM10 1h4v4h-4zM9 6h6v1H9zM8 7h8v1H8zM10 8h6v5h-6z"/></symbol><symbol id="i-friend" viewBox="0 0 16 16"><path d="M3 3h4v4H3zM2 8h6v1H2zM1 9h8v6H1zM12 4h2v2h2v2h-2v2h-2V8h-2V6h2z"/></symbol></svg>
+
+<div class="window raised">
+  <div class="titlebar"><span class="ico"></span><span id="wtitle">retronewsreader</span><span class="sp"></span><button class="wb" aria-hidden="true" tabindex="-1">_</button><button class="wb" aria-hidden="true" tabindex="-1">□</button><button class="wb" aria-hidden="true" tabindex="-1">×</button></div>
+  <div class="menubar">
+    <span class="dd"><u>F</u>ile
+      <div class="menu raised" style="min-width:200px">
+        <div class="row acct" id="c-account" style="display:none">My Account</div>
+        <div class="row" id="m-reading">My Reading</div>
+        <div class="row acct" id="c-signoff" style="display:none">Sign Off</div>
+        <hr class="op"><div class="row k op">Operator</div>
+        <div class="row op" id="m-fetch">Fetch feeds now</div>
+        <div class="row op" id="m-manage">Manage publications</div>
+        <div class="row op" id="m-reports" style="display:none">Reports</div>
+        <div class="row op" id="m-door" style="display:none">Sign-ups</div>
+        <div class="row op" id="m-relink" style="display:none">Reset an invite link</div>
+        <div class="row op" id="m-volume">Stories by publisher</div>
+        <div class="row op" id="m-inviters" style="display:none">Top inviters</div>
+        <div class="row op" id="m-links" style="display:none">Tagged links</div>
+        <div class="row op" id="m-records" style="display:none">Download synced stories</div>
+      </div>
+    </span>
+    <span class="dd"><u>E</u>dit
+      <div class="menu raised" style="min-width:200px">
+        <!-- Edit is about whatever is on screen: the feed's rows when the feed is showing, the friends' rows in the Gossip Column -->
+        <div class="row act feed" id="m-addfeed">Add to feed</div>
+        <div class="row act feed" id="m-feeds">Manage feed</div>
+        <div class="row act gos" id="e-addfriend">Add a friend</div>
+        <div class="row act gos" id="e-invite">Invite a friend</div>
+        <div class="row act gos" id="e-remove">Remove or block</div>
+      </div>
+    </span>
+    <span class="dd"><u>V</u>iew
+      <div class="menu raised" style="min-width:200px">
+        <div class="row k" style="padding-top:0">Text size</div>
+        <div class="row"><label><input type="radio" name="zoom" value="auto">Fit to screen</label></div>
+        <div class="row"><label><input type="radio" name="zoom" value="1">100%</label></div>
+        <div class="row"><label><input type="radio" name="zoom" value="1.25">125%</label></div>
+        <div class="row"><label><input type="radio" name="zoom" value="1.5">150%</label></div>
+        <hr>
+        <div class="row k">Line spacing</div>
+        <div class="row"><label><input type="radio" name="lh" value="1.25">Close</label></div>
+        <div class="row"><label><input type="radio" name="lh" value="1.45">Medium</label></div>
+        <div class="row"><label><input type="radio" name="lh" value="1.65">Open</label></div>
+        <hr>
+        <div class="row k">Paper</div>
+        <div class="row"><label><input type="radio" name="paper" value="white">Newsprint</label><span class="c sw-c" style="background:#f7f5f0"></span></div>
+        <div class="row"><label><input type="radio" name="paper" value="sepia">Sepia</label><span class="c sw-c" style="background:#efe4cf"></span></div>
+        <div class="row"><label><input type="radio" name="paper" value="night">Night</label><span class="c sw-c" style="background:#0a100b;box-shadow:inset 0 0 0 1px #62c482"></span></div>
+        <hr>
+        <div class="row" title="Lead photos in black and white, like a broadsheet"><label><input type="checkbox" id="m-tint"> Black-and-white lead photos</label></div>
+      </div>
+    </span>
+    <!-- the right end of the bar: Sign On (signed off only) and Help as a ?. The Gossip Column's button is the toolbar's fourth slot. -->
+    <i class="gap"></i>
+    <span id="menu-signon" style="display:none"><u>S</u>ign On</span>
+    <span class="dd ic" id="menu-help"><button aria-label="Help" title="Help" aria-expanded="false">?</button>
+      <div class="menu raised" id="help-menu" style="min-width:250px">
+        <!-- Help is about what is on screen: the feed's rows with the feed showing, the Gossip Column's rows in the Gossip Column.
+             It is short: a word and a few more. How to get new stories comes first. Rows marked `ph` show on phones only, `wd` on wide
+             screens only; keyboard shortcuts show only where there is a keyboard. -->
+        <div class="row k help-head story" style="padding-top:0">The story</div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-back"/></svg><span class="vh">Back</span></b><span>back to the list</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="vh">Save</span></b><span>save or unsave it</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-share"/></svg><span class="vh">Share</span></b><span>send it to a friend</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-env"/></svg><span class="vh">Envelope</span></b><span>marks it read or unread</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-prev"/></svg><span class="vh">Previous</span></b><span>the story before</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-next"/></svg><span class="vh">Next</span></b><span>the story after</span></div>
+        <div class="hrow story"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-open"/></svg><span class="vh">Open</span></b><span>the outlet's own site: top right</span></div>
+        <div class="row k help-head feed" style="padding-top:0">The feed</div>
+        <div class="hrow feed ph"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-pull"/></svg><span class="vh">Refresh</span></b><span>pull the list down to refresh</span></div>
+        <div class="hrow feed wd"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg><span class="vh">Refresh</span></b><span>refresh: first in the toolbar</span></div>
+        <div class="hrow feed ph any"><b>Read</b><span>tap a story</span></div>
+        <div class="hrow feed ph"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="vh">Save</span></b><span>swipe a story right; again to undo</span></div>
+        <div class="hrow feed wd"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="vh">Save</span></b><span>point at a story: the star at its right</span></div>
+        <div class="hrow feed ph"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-tick"/></svg><span class="vh">Select</span></b><span>press and hold, then tap others</span></div>
+        <div class="hrow feed wd"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-tick"/></svg><span class="vh">Select</span></b><span>point at a story: the box at its left</span></div>
+        <div class="hrow feed"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-env"/></svg><span class="vh">Envelope</span></b><span>marks read or unread</span></div>
+        <div class="hrow feed"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-funnel"/></svg><span class="vh">Filter</span></b><span>filter by date, source, topic, place</span></div>
+        <div class="hrow feed"><b>Older</b><span>the list's last row loads a day</span></div>
+        <div class="hrow feed"><b>More like it</b><span>a story's tag, or its outlet's name</span></div>
+        <div class="hrow feed ph tagonly"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-back"/></svg><span class="vh">Back to the feed</span></b><span>back to the full feed; or swipe right</span></div>
+        <div class="hrow feed"><b><i class="tintsw"></i><span class="vh">A tinted row</span></b><span>new since your last visit</span></div>
+        <div class="hrow feed"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-people"/></svg><span class="vh">Gossip Column</span></b><span>your friends and what you share</span></div>
+        <div class="hrow feed"><b>Your outlets</b><span>Edit: add or remove</span></div>
+        <div class="row k help-head gos" style="padding-top:0">The Gossip Column</div>
+        <div class="hrow gos"><b>Refresh</b><span>messages arrive on their own</span></div>
+        <div class="hrow gos"><b>The list</b><span>gossip from the last 30 days</span></div>
+        <div class="hrow gos"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-share"/></svg><span class="vh">Share</span></b><span>on any story: send it to a friend</span></div>
+        <div class="hrow gos"><b>Story card</b><span>tap to fold; Open reads it</span></div>
+        <div class="hrow gos"><b>Reply</b><span>aims your next message</span></div>
+        <div class="hrow gos"><b>Delete</b><span>your own lines, for both of you</span></div>
+        <div class="hrow gos"><b><i class="sdot active"></i><span class="vh">Status</span></b><span>the light and line friends see</span></div>
+        <div class="hrow gos"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-friend"/></svg><span class="vh">Friends</span></b><span>all your friends, in groups</span></div>
+        <div class="hrow gos"><b>Private</b><span>only the two of you can read it</span></div>
+        <div class="hrow gos"><b><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-back"/></svg><span class="vh">Feed</span></b><span>back to the stories</span></div>
+        <!-- Keeping the reader as an app. One row for every device: app.js puts in the words for this browser, and hides the row where the
+             reader is already installed or the browser cannot do it. -->
+        <div class="hrow" id="h-install"><b>Get the app</b><span>browser menu: Add to Home Screen</span></div>
+        <div class="help keys">
+          <hr><div class="row k">Keyboard</div>
+          <div class="hrow feed"><b>↑ ↓ or J K</b><span>move through stories</span></div>
+          <div class="hrow feed"><b>Enter</b><span>open the story</span></div>
+          <div class="hrow feed"><b>Space</b><span>select it</span></div>
+          <div class="hrow feed"><b>S</b><span>save or unsave</span></div>
+          <div class="hrow feed"><b>U</b><span>mark read or unread</span></div>
+          <div class="hrow gos"><b>Enter</b><span>send</span></div>
+          <div class="hrow gos"><b>Shift Enter</b><span>a new line</span></div>
+          <div class="hrow"><b>Esc</b><span>close a menu</span></div>
+        </div>
+        <hr><a href="/privacy" target="_blank" rel="noopener">Privacy</a> &nbsp;·&nbsp; <a href="/terms" target="_blank" rel="noopener">Terms</a> &nbsp;·&nbsp; <a href="/ai" target="_blank" rel="noopener">AI use</a> &nbsp;·&nbsp; <a href="https://github.com/kidcipote/retronewsreader" target="_blank" rel="noopener noreferrer">DIY</a>
+      </div>
+    </span>
+  </div>
+
+  <div class="toolbar">
+    <!-- four fixed slots, each a pictograph with its word beside it on wide screens: Filter, Saved, Read or unread, Gossip Column -->
+    <!-- wide screens only (a phone pulls the list down): reload to show the latest stories -->
+    <button id="t-refresh" class="slot" aria-label="Refresh: show the latest stories" title="Refresh: show the latest stories"><svg class="pm" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 3h7v2H4zM3 4h1v1H3zM2 5h2v6H2zM3 11h1v1H3zM4 11h8v2H4zM12 11h1v1h-1zM12 8h2v3h-2zM11 1h1v6h-1zM12 2h1v4h-1zM13 3h1v2h-1z"/></svg><span class="w">Refresh</span></button>
+    <div class="dd" id="dd-filter"><button id="b-filter" class="slot" aria-expanded="false" aria-label="Filter" title="Filter the list"><svg class="pm" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 2h14v2H1zM2 4h12v1H2zM3 5h10v1H3zM4 6h8v1H4zM5 7h6v1H5zM6 8h4v1H6zM7 9h2v5H7z"/></svg><span class="w">Filter</span><span class="n" id="filter-n"></span></button>
+      <div class="menu raised" id="filter-menu">
+        <!-- two buttons side by side, in the room of one row: a toggle for unread only, and one press back to no filters -->
+        <div class="btns ftop"><button id="f-unread" class="slot" aria-pressed="false" title="Show only stories you have not opened"><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-env"/></svg>Unread only</button><button id="f-clear" class="slot" title="Clear every filter"><svg class="pm" aria-hidden="true" focusable="false"><use href="#i-x"/></svg>Clear all<span class="n" id="f-clear-n"></span></button></div>
+        <hr><div class="row act sec" data-sec="dates"><span class="tw">▸</span>Dates<span class="c" id="dates-n"></span></div>
+        <div id="dates-menu" style="display:none">
+          <div class="row"><span class="k" style="width:36px">From</span><input type="hidden" id="from"><button class="datebtn" data-for="from" aria-haspopup="true"></button></div>
+          <div class="row"><span class="k" style="width:36px">To</span><input type="hidden" id="to"><button class="datebtn" data-for="to" aria-haspopup="true"></button></div>
+          <div id="cal" style="display:none"></div>
+          <div class="row" data-days="0">Today</div><div class="row" data-days="1">Since yesterday</div><div class="row" data-days="3">Last 3 days</div><div class="row" data-days="7">Last 7 days</div><div class="row" data-days="30">Last 30 days</div><div class="row" data-days="all">All dates</div>
+        </div>
+        <hr><div class="row act sec" data-sec="src" id="src-head"><span class="tw">▸</span>Sources<span class="c" id="src-n"></span></div><div id="src-menu" style="display:none"></div>
+        <hr><div class="row act sec" data-sec="topic"><span class="tw">▸</span>Topic<span class="c" id="topic-n"></span></div><div id="topic-menu" style="display:none"></div>
+        <hr><div class="row act sec" data-sec="place"><span class="tw">▸</span>Place<span class="c" id="place-n"></span></div><div id="place-menu" style="display:none"></div>
+        <hr><div class="row act sec" data-sec="lang"><span class="tw">▸</span>Language<span class="c" id="lang-n"></span></div><div id="lang-menu" style="display:none"></div>
+      </div>
+    </div>
+    <button id="t-saved" class="slot" aria-pressed="false" aria-label="Saved stories only" title="Show only saved stories"><svg class="pm" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M7 1h2v2H7zM6 3h4v2H6zM1 5h14v1H1zM2 6h12v1H2zM3 7h10v1H3zM4 8h8v2H4zM3 10h10v1H3zM3 11h4v1H3zM9 11h4v1H9zM2 12h4v1H2zM10 12h4v1h-4zM2 13h2v1H2zM12 13h2v1h-2z"/></svg><span class="w">Saved</span><span class="n" id="savedonly-n"></span></button>
+    <button id="t-mark" class="slot" disabled aria-label="Mark read" title="Mark read"><svg class="pm env-shut" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="M1 3h14v10H1zM2 4v8h12V4z"/><path d="M2 4h2v1H2zM3 5h2v1H3zM5 6h1v1H5zM6 7h1v1H6zM7 8h2v1H7zM9 7h1v1H9zM10 6h1v1h-1zM11 5h2v1h-2zM12 4h2v1h-2z"/></svg><svg class="pm env-open" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="M1 7h14v8H1zM2 8v6h12V8z"/><path d="M2 6h1v1H2zM3 5h1v1H3zM4 4h1v1H4zM5 3h1v1H5zM6 2h1v1H6zM7 1h2v1H7zM9 2h1v1H9zM10 3h1v1h-1zM11 4h1v1h-1zM12 5h1v1h-1zM13 6h1v1h-1zM5 10h6v1H5zM5 12h4v1H5z"/></svg><svg class="pm sync-ic" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M7 1h2v1H7zM6 2h4v1H6zM5 3h6v1H5zM7 4h2v6H7zM2 10h1v4h10v-4h1v5H2z"/></svg><span class="w">Mark read</span></button>
+    <button id="menu-gossip" class="slot" aria-pressed="false" aria-label="Gossip Column" title="Gossip Column: your friends and what you have sent each other"><svg class="pm" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 3h4v4H3zM2 8h6v1H2zM1 9h8v6H1zM10 1h4v4h-4zM9 6h6v1H9zM8 7h8v1H8zM10 8h6v5h-6z"/></svg><span class="w">Gossip Column</span><span class="n" id="chat-n"></span></button>
+    <span class="sep"></span>
+    <button id="prev" title="Previous story">◀</button><button id="next" title="Next story">▶</button>
+    <button id="save" disabled title="Save for later (S)">☆ Save</button>
+    <button id="source" disabled title="Open the publisher's page in a side window that is reused for every story, so a sign-in there persists">Open</button>
+    <button id="sendto" disabled style="display:none" title="Share this story with a friend">Share</button>
+  </div>
+
+  <div class="gadgets" id="gadgets"><span class="gad" id="gd-wx" title="New York now, from the National Weather Service"></span><span class="gad" id="gd-you" title="Your time"></span><span class="gad" id="gd-them" title="Their time"></span><span class="gad stat dd" id="gd-status"><span class="k">STATUS</span><button id="gs-pick" aria-expanded="false" aria-label="Choose a status or an emoji" title="Choose a status or an emoji">☺ ▾</button><input type="text" id="gs-text" maxlength="80" placeholder="Active" aria-label="Status message" title="Or write your own. Enter saves it." autocomplete="off">
+    <div class="menu raised" id="gs-menu" style="min-width:230px">
+      <div class="row k" style="padding-top:0">Status</div>
+      <div class="row act" data-st=""><i class="sdot active"></i>Active<span class="c">Away when you leave</span></div>
+      <div class="row act" data-st="Away"><i class="sdot away"></i>Away</div>
+      <div class="row act" data-st="Busy"><i class="sdot busy"></i>Busy</div>
+      <div class="row act" data-st="Be right back"><i class="sdot brb"></i>Be right back</div>
+      <hr><div class="row k">Emoji</div>
+      <div class="egrid" id="gs-emojis"></div>
+      <div class="row"><input type="text" id="gs-any" maxlength="16" placeholder="Any emoji: type or paste one" aria-label="Any other emoji" autocomplete="off" autocapitalize="off"></div>
+      <div class="row act" data-emoji="">No emoji</div>
+    </div></span></div>
+  <div class="strip" id="strip" style="display:none"></div>
+  <div class="strip" id="fresh" style="display:none" role="status"><a id="fresh-go" tabindex="0" role="button"></a></div>
+  <div class="tagbar" id="tagbar" style="display:none"><button id="tag-back">‹ Your story</button><span class="k">TAG</span><span id="tag-name"></span></div>
+  <div class="tagbar" id="gossipbar"><button id="gossip-back">‹ Feed</button><span id="gossip-me"></span>
+    <!-- the friends menu: add by screen name, answer requests, invite, remove. The count beside the icon is requests waiting on you. -->
+    <span class="dd" id="dd-friends"><button id="g-menu-btn" class="slot" aria-expanded="false" aria-label="Friends: add, invite or remove" title="Friends: add, invite or remove"><svg class="pm" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 3h4v4H3zM2 8h6v1H2zM1 9h8v6H1zM12 4h2v2h2v2h-2v2h-2V8h-2V6h2z"/></svg><span class="w">Friends</span><span class="n" id="g-n"></span></button>
+      <div class="menu raised" id="g-menu" style="min-width:270px"><div class="gfoot" id="g-foot">
+        <div id="g-pending"></div>
+        <div id="g-list"></div>
+        <div class="k">Add a friend by screen name</div>
+        <div class="grow"><input type="text" id="g-add" aria-label="Add a friend by screen name" maxlength="16" spellcheck="false" autocapitalize="off" autocomplete="off"><button id="g-add-go">Add</button></div>
+        <div class="msg" id="g-msg"></div>
+        <div class="gbtns"><button id="g-invite">Invite a friend</button><button id="g-drop">Remove or block</button></div>
+        <div id="g-remove"></div>
+      </div></div>
+    </span></div>
+  <div class="main">
+    <div class="list sunken" id="list">
+      <!-- pull the story list down from its top (phones) and this opens above it: a progress bar that fills as you pull, then refreshes -->
+      <div id="pull" aria-hidden="true"><div class="pl"><span class="mini-bar"><i id="pull-bar"></i></span><span id="pull-t">Pull to refresh</span></div></div>
+      <div id="swipe-under" aria-hidden="true"><b>★</b><span></span></div>
+      <table>
+        <colgroup><col style="width:20px"><col><col style="width:64px"></colgroup>
+        <thead><tr><th><button id="pick-all" aria-pressed="false" aria-label="Select every story listed" title="Select every story listed"><input type="checkbox" id="pick-all-box" tabindex="-1" aria-hidden="true"></button></th><th id="th-top" title="Back to the top of the list" aria-label="Story. Back to the top of the list">Story</th><th data-k="date" class="sorted desc" title="Sort by date">Date</th></tr></thead>
+        <tbody id="rows"><tr class="loading"><td colspan="3" role="status"><i class="spin" aria-hidden="true"></i>Loading stories</td></tr></tbody>
+      </table>
+      <div id="gossip">
+        <table>
+          <colgroup><col style="width:20px"><col><col style="width:64px"></colgroup>
+          <thead><tr><th title="Green: active now. Red: busy. Green ring: be right back. Empty: away.">●</th><th>Friend</th><th>Latest</th></tr></thead>
+          <tbody id="g-rows"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="split" id="split"></div>
+    <div class="article sunken" id="article"><div class="blank">Select a story</div></div>
+    <div class="convo" id="convo"><div class="blank">Select a friend</div></div>
+  </div>
+
+  <div class="status"><span class="g" id="s1">Loading stories…</span><span id="s-prog" role="progressbar" aria-label="How far through this story" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="How far through this story you are">Read <span class="mini-bar"><i id="prog-bar" style="width:0%"></i></span> <span id="prog-pct">0%</span></span><span id="s2"></span><span id="s3"></span><span id="s-today" title="Share of today's listed stories you have opened"><span class="lbl">Today </span><span class="mini-bar"><i id="read-bar" style="width:0%"></i></span> <span id="read-pct" style="font-family:var(--mono);font-size:10px">0%</span></span><span id="s4"></span></div>
+</div>
+
+<div id="rotate" role="status"><div class="raised"><div class="titlebar"><span class="ico"></span>retronewsreader</div><p><b>Turn your phone upright.</b><br>The reader is built for a phone held tall, or for a wider screen.</p></div></div>
+<div id="sheet-shade"></div>
+<div class="shade" id="pubshade">
+  <div class="dialog raised" role="dialog" aria-modal="true" aria-labelledby="pubtitle">
+    <div class="titlebar"><span class="ico"></span><span id="pubtitle">Manage publications</span><span class="sp"></span><button class="wb" id="pub-x">×</button></div>
+    <div class="dbody">
+      <div class="sunken" style="padding:2px;max-height:calc(46 * var(--vh, 1vh));overflow:auto">
+        <table>
+          <thead><tr><th></th><th>Name</th><th>Label</th><th>Tags</th><th>Feed</th><th>Status</th><th></th></tr></thead>
+          <tbody id="pub-rows"></tbody>
+        </table>
+      </div>
+      <fieldset class="groove"><legend>Browse the catalog</legend>
+        <div class="msg" id="cat-msg">Vetted New York outlets with working feeds, grouped by borough. Tick the ones you want, then Add ticked.</div>
+        <div id="cat-list" class="sunken" style="max-height:calc(30 * var(--vh, 1vh));overflow:auto;padding:4px 8px"></div>
+        <div class="addrow" style="margin-top:6px"><button id="cat-add">Add ticked</button><span class="k" id="cat-count"></span></div>
+      </fieldset>
+      <fieldset class="groove"><legend>Add a publication</legend>
+        <div class="addrow"><span class="k">Site or feed URL</span><input type="text" id="probe-url" placeholder="e.g. hellgatenyc.com or https://example.org/feed" spellcheck="false"><button id="probe-go">Find feed</button></div>
+        <div class="msg" id="probe-msg"></div>
+        <div class="found" id="found">
+          <span class="k">Name</span><input type="text" id="f-name" style="width:180px">
+          <span class="k">Label</span><input type="text" id="f-short" style="width:80px" maxlength="10">
+          <span class="k">Color</span><input type="color" id="f-color" value="#336699">
+          <span class="k">Tags</span><input type="text" id="f-tags" placeholder="NYC, Politics" style="width:160px">
+          <span class="mono" id="f-feed" style="flex-basis:100%;color: var(--dim)"></span>
+          <button id="f-add">Add to list</button>
+        </div>
+      </fieldset>
+      <div class="msg" id="pub-msg">Changes are written to feeds.json when you press Save. Removing a publication also removes its archived stories on the next fetch; saved stories keep their copies.</div>
+    </div>
+    <div class="dbtns"><button id="pub-cancel">Cancel</button><button id="pub-save" class="default">Save and refresh</button></div>
+  </div>
+</div>
+
+<div class="shade" id="readshade">
+  <div class="dialog raised" role="dialog" aria-modal="true" aria-labelledby="readtitle">
+    <div class="titlebar"><span class="ico"></span><span id="readtitle">My Reading</span><span class="sp"></span><button class="wb" id="read-x" aria-label="Close">×</button></div>
+    <div class="dbody">
+      <div class="addrow" id="read-view"><span class="k">Show</span><button data-rv="read">My reading</button><button data-rv="vol">Story volume</button></div>
+      <div class="addrow" id="read-range"><span class="k">Last</span><button data-rd="7">7 days</button><button data-rd="14">14 days</button><button data-rd="30">30 days</button></div>
+      <div class="msg" id="read-sum" role="status"></div>
+      <div class="sunken nofol" id="read-body"></div>
+      <div id="vol72" style="display:none"><div class="msg">Stories that arrived in the last 72 hours, in 3-hour steps, across the feeds you follow.</div>
+    <div class="stats"><div><span class="k">Latest 3h</span><b id="st-now">0</b></div><div><span class="k">Average</span><b id="st-avg">0</b></div><div><span class="k">Peak</span><b id="st-peak">0</b></div><div><span class="k">In range</span><b id="st-total">0</b></div></div>
+        <div class="sunken" id="vol72-box"><canvas id="chart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="shade" id="volshade">
+  <div class="dialog raised" role="dialog" aria-modal="true" aria-labelledby="voltitle">
+    <div class="titlebar"><span class="ico"></span><span id="voltitle">Stories by publisher</span><span class="sp"></span><button class="wb" id="vol-x" aria-label="Close">×</button></div>
+    <div class="dbody">
+      <div class="addrow" id="vol-range"><span class="k">Last</span><button data-vd="7">7 days</button><button data-vd="14">14 days</button><button data-vd="30">30 days</button></div>
+      <div class="msg" id="vol-sum" role="status"></div>
+      <div class="sunken" id="vol-body"></div>
+    </div>
+    <div class="dbtns"><button id="vol-close" class="default">Close</button></div>
+  </div>
+</div>
+
+<div class="shade" id="invshade">
+  <div class="dialog raised" role="dialog" aria-modal="true" aria-labelledby="invtitle">
+    <div class="titlebar"><span class="ico"></span><span id="invtitle">Top inviters</span><span class="sp"></span><button class="wb" id="inv-x" aria-label="Close">×</button></div>
+    <div class="dbody">
+      <div class="msg" id="inv-sum" role="status"></div>
+      <div class="sunken" id="inv-body"></div>
+    </div>
+    <div class="dbtns"><button id="inv-close" class="default">Close</button></div>
+  </div>
+</div>
+
+
+<script src="app.js" defer></script>
+<script src="chat.js" defer></script>
+</body>
+</html>

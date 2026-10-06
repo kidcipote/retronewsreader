@@ -1,0 +1,298 @@
+{
+  "publications": [
+    {
+      "id": "nyt",
+      "name": "NYT",
+      "short": "NYT",
+      "color": "#1a1a1a",
+      "ink": "#f4f1ea",
+      "home": "https://www.nytimes.com/section/nyregion",
+      "feed": "https://rss.nytimes.com/services/xml/rss/nyt/NYRegion.xml",
+      "tags": [
+        "NYC",
+        "News"
+      ],
+      "support": {
+        "url": "https://www.nytimes.com/subscription",
+        "label": "Subscribe"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "gothamist",
+      "name": "Gothamist",
+      "short": "GOTH",
+      "color": "#8e2f2b",
+      "ink": "#f4f1ea",
+      "home": "https://gothamist.com",
+      "feed": "https://gothamist.com/feed",
+      "tags": [
+        "NYC",
+        "News"
+      ],
+      "support": {
+        "url": "https://pledge.wnyc.org/support/gothamist/?utm_medium=partnersite&utm_source=gothamist&utm_campaign=homepage-header",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "thecity",
+      "name": "The City",
+      "short": "CITY",
+      "color": "#a8862a",
+      "ink": "#1a1a1a",
+      "home": "https://www.thecity.nyc",
+      "feed": "https://www.thecity.nyc/feed/",
+      "tags": [
+        "NYC",
+        "News",
+        "Politics"
+      ],
+      "support": {
+        "url": "https://www.thecityreporter.nyc/donate/",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "streetsblog",
+      "name": "Streetsblog NYC",
+      "short": "STREETS",
+      "color": "#3d6b4f",
+      "ink": "#f4f1ea",
+      "home": "https://nyc.streetsblog.org",
+      "feed": "https://nyc.streetsblog.org/feed",
+      "tags": [
+        "NYC",
+        "Transit"
+      ],
+      "support": {
+        "url": "https://nyc.streetsblog.org/2019/08/29/heres-how-to-donate",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "documented",
+      "name": "Documented NY",
+      "short": "DOC",
+      "color": "#34507a",
+      "ink": "#f4f1ea",
+      "home": "https://documentedny.com",
+      "feed": "https://documentedny.com/feed/",
+      "tags": [
+        "NYC",
+        "Immigration"
+      ],
+      "support": {
+        "url": "https://givebutter.com/67YVn6",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "propublica",
+      "name": "ProPublica",
+      "short": "PROPUB",
+      "color": "#6a6762",
+      "ink": "#f4f1ea",
+      "home": "https://www.propublica.org",
+      "feed": "https://www.propublica.org/feeds/propublica/main",
+      "tags": [
+        "Investigations",
+        "National"
+      ],
+      "support": {
+        "url": "https://give.propublica.org/campaign/748664/donate?c_src=UpRed",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "hellgate",
+      "name": "Hell Gate",
+      "short": "HELL GATE",
+      "color": "#b5542c",
+      "ink": "#f4f1ea",
+      "home": "https://hellgatenyc.com",
+      "feed": "https://hellgatenyc.com/all-posts/rss/",
+      "tags": [
+        "NYC",
+        "News",
+        "Politics"
+      ],
+      "support": {
+        "url": "https://hellgatenyc.com/membership/",
+        "label": "Become a member"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "groove",
+      "name": "The New York Groove",
+      "short": "GROOVE",
+      "color": "#6a4a78",
+      "ink": "#f4f1ea",
+      "home": "https://nygroove.nyc",
+      "feed": "https://nygroove.nyc/feed/",
+      "tags": [
+        "NYC",
+        "Culture"
+      ],
+      "support": {
+        "url": "https://nygroove.nyc/support-us/",
+        "label": "Subscribe"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "cityandstate",
+      "name": "City & State NY",
+      "short": "C&S",
+      "color": "#2f6468",
+      "ink": "#f4f1ea",
+      "home": "https://www.cityandstateny.com",
+      "feed": "https://www.cityandstateny.com/rss/all",
+      "tags": [
+        "NYC",
+        "Politics"
+      ],
+      "support": {
+        "url": "https://www.cityandstateny.com/subscription/?oref=csny-nav",
+        "label": "Subscribe"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "citylimits",
+      "name": "City Limits",
+      "short": "LIMITS",
+      "color": "#86623a",
+      "ink": "#f4f1ea",
+      "home": "https://citylimits.org",
+      "feed": "https://citylimits.org/feed/",
+      "tags": [
+        "NYC",
+        "Housing"
+      ],
+      "support": null,
+      "support_why": "blocked",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "techcrunch",
+      "name": "TechCrunch",
+      "short": "TECHCRUNCH",
+      "color": "#4f7a2f",
+      "ink": "#f4f1ea",
+      "home": "https://techcrunch.com",
+      "feed": "https://techcrunch.com/feed/",
+      "tags": [
+        "Tech"
+      ],
+      "support": null,
+      "support_why": "notfound",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "gizmodo",
+      "name": "Gizmodo",
+      "short": "GIZMODO",
+      "color": "#7a3f5a",
+      "home": "https://gizmodo.com",
+      "feed": "https://gizmodo.com/feed",
+      "tags": [
+        "Tech"
+      ],
+      "ink": "#f4f1ea",
+      "support": null,
+      "support_why": "notfound",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "vox",
+      "name": "Vox",
+      "short": "VOX",
+      "color": "#3f6f7a",
+      "home": "https://www.vox.com",
+      "feed": "https://www.vox.com/rss/index.xml",
+      "tags": [
+        "National",
+        "News"
+      ],
+      "ink": "#f4f1ea",
+      "support": {
+        "url": "https://www.vox.com/support-now?itm_campaign=member-menu-nav&itm_medium=site&itm_source=navigation",
+        "label": "Become a member"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "politico",
+      "name": "Politico",
+      "short": "POLITICO",
+      "color": "#5c5a8a",
+      "home": "https://www.politico.com",
+      "feed": "https://rss.politico.com/politics-news.xml",
+      "tags": [
+        "Politics",
+        "National"
+      ],
+      "ink": "#f4f1ea",
+      "support": null,
+      "support_why": "blocked",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "theverge",
+      "name": "The Verge",
+      "short": "VERGE",
+      "color": "#6e5a3a",
+      "home": "https://www.theverge.com",
+      "feed": "https://www.theverge.com/rss/index.xml",
+      "tags": [
+        "Tech"
+      ],
+      "ink": "#f4f1ea",
+      "support": {
+        "url": "https://www.theverge.com/subscribe?itm_campaign=menu-nav-subscribe&itm_medium=site&itm_source=navigation",
+        "label": "Subscribe"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    },
+    {
+      "id": "jacobin",
+      "name": "Jacobin",
+      "short": "JACOBIN",
+      "color": "#a83a3a",
+      "home": "https://jacobin.com",
+      "feed": "https://jacobin.com/feed",
+      "tags": [
+        "Politics",
+        "Opinion"
+      ],
+      "ink": "#f4f1ea",
+      "support": {
+        "url": "https://jacobin.com/donate",
+        "label": "Donate"
+      },
+      "support_why": "",
+      "support_checked": "2026-10-03"
+    }
+  ],
+  "max_per_publication": 25,
+  "fetch_article_pages": true,
+  "keep_days": 365
+}

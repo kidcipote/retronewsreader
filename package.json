@@ -1,0 +1,19 @@
+{
+  "name": "my-news-reader",
+  "private": true,
+  "type": "module",
+  "description": "A retro desktop-style news reader: one Cloudflare Worker, KV storage and a D1 database.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "deploy": "npm run build && wrangler deploy && wrangler d1 migrations apply DB --remote",
+    "dev": "npm run build && wrangler dev"
+  },
+  "devDependencies": { "wrangler": "4.143.0" },
+  "cloudflare": {
+    "bindings": {
+      "ADMIN_TOKEN": { "description": "A long random password for maintenance calls (you can leave it empty; you run the reader from your own account)." },
+      "TYPESAFE_API_KEY": { "description": "Optional. A key from TypeSafe AI (Jev) to sort stories by topic and place. Leave empty to sort by the built-in keyword rules." },
+      "RESEND_API_KEY": { "description": "Optional. A Resend key for sign-up and password-reset email. Leave empty and no email is sent." }
+    }
+  }
+}

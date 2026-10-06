@@ -1,0 +1,26 @@
+{
+  // Your own copy of the reader on Cloudflare Workers.
+  // No storage ids are written here on purpose: the first deploy creates the storage (KV) and the database (D1) and fills them in.
+  "name": "my-news-reader",
+  "main": "cloud/worker.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  // To use your own domain, add: "routes": [{ "pattern": "news.example.com", "custom_domain": true }]
+  // To pin the Cloudflare account a deploy goes to, add: "account_id": "<your account id>"
+  // The limits one run works within. "free" fits Cloudflare's free plan (50 operations a run, 1,000 KV writes a day): about 15 feeds are
+  // fetched per run and more take turns. On the $5 plan, change this to "paid" (or delete the line) for up to 400 feeds a run.
+  "vars": { "PLAN": "free" },
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": ["/", "/index.html", "/privacy", "/terms", "/ai", "/ig", "/data.json", "/status", "/refresh", "/publications", "/probe", "/api/*"]
+  },
+  "kv_namespaces": [{ "binding": "STORE" }],
+  // Accounts, friends and messages (cloud/migrations/).
+  "d1_databases": [{ "binding": "DB", "migrations_dir": "cloud/migrations" }],
+  // Every 30 minutes the feeds are fetched; at 2, 17, 32 and 47 past, stories still without tags are tagged.
+  "triggers": { "crons": ["*/30 * * * *", "2,17,32,47 * * * *"] }
+}
